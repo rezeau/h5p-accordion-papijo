@@ -24,6 +24,7 @@ H5P.AccordionPapiJo = (function ($) {
     // Set default behavior.
     this.params = $.extend({}, {
       hTag: "h2",
+      compact: false,      
       panels: []
     }, params);
 
@@ -52,7 +53,6 @@ H5P.AccordionPapiJo = (function ($) {
       // Mark as consumed
       self.triggerConsumed();
 
-      // Create the content
       self.elements = [];
       for (var i = 0; i < self.params.panels.length; i++) {
         self.createPanel(i);
@@ -61,7 +61,7 @@ H5P.AccordionPapiJo = (function ($) {
     }
 
     // Insert content
-    $container.html('').addClass('h5p-accordion').append(self.$content);
+    $container.html('<span class="h5p-accordion-title">' + this.params.accordionTitle + '</span>').addClass('h5p-question-introduction h5p-accordion').append(self.$content);
   };
 
   /**
@@ -87,9 +87,13 @@ H5P.AccordionPapiJo = (function ($) {
     };
 
     // Create panel title
+    let titleClass = 'h5p-panel-title';
+    if (this.params.compact) {
+      titleClass += ' compact';
+    }
     var $title =  $('<' + this.params.hTag + '/>', {
       'id': titleId,
-      'class': 'h5p-panel-title',
+      'class': titleClass,
       'role': 'button',
       'tabindex': '0',
       'aria-selected': (id === 0 ? 'true' : 'false'),
