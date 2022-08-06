@@ -24,7 +24,8 @@ H5P.AccordionPapiJo = (function ($) {
     // Set default behavior.
     this.params = $.extend({}, {
       hTag: "h2",
-      compact: false,      
+      compact: false,
+      accordionTitle: '',
       panels: []
     }, params);
 
@@ -61,7 +62,11 @@ H5P.AccordionPapiJo = (function ($) {
     }
 
     // Insert content
-    $container.html('<span class="h5p-accordion-title">' + this.params.accordionTitle + '</span>').addClass('h5p-question-introduction h5p-accordion').append(self.$content);
+    let accordionTitle = '';
+    if (this.params.accordionTitle !== '') {
+      accordionTitle = '<span class="h5p-accordion-title">' + this.params.accordionTitle + '</span>';
+    }
+    $container.html(accordionTitle).addClass('h5p-accordion').append(self.$content);
   };
 
   /**

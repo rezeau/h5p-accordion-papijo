@@ -17,6 +17,7 @@
     "field": {
       "name": "content",
       "type": "group",
+      "expanded": false,
       "label": "Content",
       "importance": "high",
       "entity": "content",
