@@ -31,5 +31,12 @@
     {
       "path": "h5p-accordion.css"
     }
+  ],
+  "editorDependencies": [
+    {
+      "machineName": "H5PEditor.ShowWhen",
+      "majorVersion": 1,
+      "minorVersion": 0
+    }
   ]
 }

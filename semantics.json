@@ -29,6 +29,14 @@
           "importance": "high"
         },
         {
+          "name": "usetextareapapijo",
+          "type": "boolean",
+          "label": "Use Textarea papi Jo?",
+          "importance": "low",
+          "description": "",
+          "default": false
+        },
+        {
           "name": "content",
           "type": "library",
           "label": "Content type",
@@ -36,7 +44,35 @@
           "entity": "content",
           "options": [
             "H5P.AdvancedTextPapiJo 1.1"
-          ]
+          ],                  
+          "widget": "showWhen",
+          "showWhen": {
+            "rules": [
+              {
+                "field": "usetextareapapijo",
+                "equals": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "content2",
+          "type": "library",
+          "label": "Content type2",
+          "importance": "medium",
+          "entity": "content",
+          "options": [
+            "H5P.TextareaPapiJo 1.0"
+          ],                  
+          "widget": "showWhen",
+          "showWhen": {
+            "rules": [
+              {
+                "field": "usetextareapapijo",
+                "equals": true
+              }
+            ]
+          }
         }
       ]
     }
