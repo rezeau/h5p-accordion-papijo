@@ -29,50 +29,21 @@
           "importance": "high"
         },
         {
-          "name": "usetextareapapijo",
-          "type": "boolean",
-          "label": "Use Textarea papi Jo?",
-          "importance": "low",
-          "description": "",
-          "default": false
-        },
-        {
           "name": "content",
           "type": "library",
           "label": "Content type",
           "importance": "medium",
           "entity": "content",
+          "description": "Select your type of library for content.",
           "options": [
-            "H5P.AdvancedTextPapiJo 1.1"
-          ],                  
-          "widget": "showWhen",
-          "showWhen": {
-            "rules": [
-              {
-                "field": "usetextareapapijo",
-                "equals": false
-              }
-            ]
-          }
-        },
-        {
-          "name": "content2",
-          "type": "library",
-          "label": "Content type2",
-          "importance": "medium",
-          "entity": "content",
-          "options": [
-            "H5P.TextareaPapiJo 1.0"
-          ],                  
-          "widget": "showWhen",
-          "showWhen": {
-            "rules": [
-              {
-                "field": "usetextareapapijo",
-                "equals": true
-              }
-            ]
-          }
+            "H5P.AdvancedTextPapiJo 1.1",
+            "H5P.Image 1.1",
+            "H5P.Video 1.6",
+            "H5P.Audio 1.5",
+            "H5P.TextareaPapiJo 1.0",
+            "H5P.JigsawPuzzle 0.4",
+            "H5P.HighlightTheWords 0.1"
+          ]
         }
       ]
     }

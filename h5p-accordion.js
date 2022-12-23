@@ -34,10 +34,6 @@ H5P.AccordionPapiJo = (function ($) {
     this.instances = [];
 
     for (var i = 0; i < this.params.panels.length; i++) {
-      console.log(JSON.stringify(this.params.panels[i].usetextareapapijo, undefined, 4));
-      if (this.params.panels[i].usetextareapapijo) {
-        this.params.panels[i].content =  this.params.panels[i].content2;
-      }
       this.instances[i] = H5P.newRunnable(this.params.panels[i].content, contentId);
     }
 
