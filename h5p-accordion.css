@@ -3,7 +3,7 @@
 }
 .h5p-accordion-papijo .h5p-panel-title {
   margin: 0;
-  padding: 0.8em 0.8em 0.8em 2.25em;
+  //padding: 0.8em 0.8em 0.8em 2.25em;
   color: #696971;
   position: relative;
   text-decoration: none;
@@ -12,6 +12,9 @@
   transition: color 200ms ease 0s;
   border-top: 1px solid #eeeeee;
   cursor: pointer;
+  padding: 0.0em 0em 0em 2.0em;
+  font-size: 1.0em;
+  line-height: 1.6em;
 }
 
 .h5p-accordion-papijo .h5p-panel-title.compact {
@@ -54,5 +57,5 @@
 }
 
 .h5p-accordion-papijo .h5p-accordion-papijo-title {
-  font-size: 1.0em;
+  font-size: 1.2em;
 }

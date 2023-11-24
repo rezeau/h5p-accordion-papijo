@@ -24,7 +24,6 @@ H5P.AccordionPapiJo = (function ($) {
     // Set default behavior.
     this.params = $.extend({}, {
       hTag: "h2",
-      compact: false,
       accordionTitle: '',
       panels: []
     }, params);
@@ -93,9 +92,7 @@ H5P.AccordionPapiJo = (function ($) {
 
     // Create panel title
     let titleClass = 'h5p-panel-title';
-    if (this.params.compact) {
-      titleClass += ' compact';
-    }
+    
     var $title =  $('<' + this.params.hTag + '/>', {
       'id': titleId,
       'class': titleClass,

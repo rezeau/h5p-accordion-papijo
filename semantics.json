@@ -70,13 +70,5 @@
       }
     ],
     "default": "h2"
-  },
-  {
-    "name": "compact",
-    "type": "boolean",
-    "label": "Compact format?",
-    "importance": "low",
-    "description": "Check this option if you want the panels to be displayed in a compact form",
-    "default": false
   }
 ]
