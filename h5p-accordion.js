@@ -64,9 +64,9 @@ H5P.AccordionPapiJo = (function ($) {
     // Insert content
     let accordionTitle = '';
     if (this.params.accordionTitle !== '') {
-      accordionTitle = '<span class="h5p-accordion-title">' + this.params.accordionTitle + '</span>';
+      accordionTitle = '<span class="h5p-accordion-papijo-title">' + this.params.accordionTitle + '</span>';
     }
-    $container.html(accordionTitle).addClass('h5p-accordion').append(self.$content);
+    $container.html(accordionTitle).addClass('h5p-accordion-papijo').append(self.$content);
   };
 
   /**
