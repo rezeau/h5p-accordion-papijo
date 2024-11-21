@@ -2,33 +2,38 @@
   "semantics": [
     {
       "label": "Panels",
-      "entity": "panel",
+      "description": "TODO"
+    },
+    {
+      "label": "H tags for labels (does not affect the size of the label)",
+      "entity": "TODO",
       "field": {
-        "label": "Content",
-        "entity": "content",
+        "label": "TODO",
+        "entity": "TODO",
         "fields": [
           {
-            "label": "Title"
+            "label": "TODO"
           },
           {
-            "label": "Content type",
-            "entity": "content"
+            "label": "TODO",
+            "entity": "TODO",
+            "description": "TODO"
           }
         ]
       }
     },
     {
-      "label": "H tags for labels (does not affect the size of the label)",
-      "description": "The h tag used on the labels. Normally H2 but if this belongs under an H2 heading use H3. Does not affect the size of the labels, only used for semantical purposes.",
+      "label": "TODO",
+      "description": "TODO",
       "options": [
         {
-          "label": "H2"
+          "label": "TODO"
         },
         {
-          "label": "H3"
+          "label": "TODO"
         },
         {
-          "label": "H4"
+          "label": "TODO"
         }
       ]
     }
