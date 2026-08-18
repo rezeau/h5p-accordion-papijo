@@ -1,8 +1,8 @@
 {
   "title": "Accordion Papi Jo",
   "majorVersion": 1,
-  "minorVersion": 0,
-  "patchVersion": 35,
+  "minorVersion": 1,
+  "patchVersion": 0,
   "embedTypes": [
     "iframe"
   ],
@@ -12,12 +12,12 @@
   "author": "Joubel",
   "coreApi": {
     "majorVersion": 1,
-    "minorVersion": 5
+    "minorVersion": 28
   },
   "license": "MIT",
   "preloadedJs": [
     {
-      "path": "h5p-accordion.js"
+      "path": "h5p-accordion-papijo.js"
     }
   ],
   "preloadedDependencies": [
@@ -29,7 +29,7 @@
   ],
   "preloadedCss": [
     {
-      "path": "h5p-accordion.css"
+      "path": "h5p-accordion-papijo.css"
     }
   ],
   "editorDependencies": [

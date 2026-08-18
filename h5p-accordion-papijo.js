@@ -24,7 +24,6 @@ H5P.AccordionPapiJo = (function ($) {
     // Set default behavior.
     this.params = $.extend({}, {
       hTag: "h2",
-      accordionTitle: '',
       panels: []
     }, params);
 
@@ -53,6 +52,7 @@ H5P.AccordionPapiJo = (function ($) {
       // Mark as consumed
       self.triggerConsumed();
 
+      // Create the content
       self.elements = [];
       for (var i = 0; i < self.params.panels.length; i++) {
         self.createPanel(i);
@@ -61,11 +61,7 @@ H5P.AccordionPapiJo = (function ($) {
     }
 
     // Insert content
-    let accordionTitle = '';
-    if (this.params.accordionTitle !== '') {
-      accordionTitle = '<span class="h5p-accordion-papijo-title">' + this.params.accordionTitle + '</span>';
-    }
-    $container.html(accordionTitle).addClass('h5p-accordion-papijo').append(self.$content);
+    $container.html('').addClass('h5p-accordion-papijo h5p-theme').append(self.$content);
   };
 
   /**
@@ -80,25 +76,26 @@ H5P.AccordionPapiJo = (function ($) {
     var toggleCollapse = function () {
       if (self.$expandedTitle === undefined || !self.$expandedTitle.is($title)) {
         self.collapseExpandedPanels();
-        self.expandPanel($title, $content);
+        self.expandPanel($title, $titleButton, $content);
       }
       else {
-        self.collapsePanel($title, $content);
+        self.collapsePanel($title, $titleButton, $content);
       }
 
       // We're running in an iframe, so we must animate the iframe height
       self.animateResize();
     };
-
-    // Create panel title
-    let titleClass = 'h5p-panel-title';
     
+    // Create panel title
     var $title =  $('<' + this.params.hTag + '/>', {
       'id': titleId,
-      'class': titleClass,
-      'role': 'button',
+      'class': 'h5p-panel-title',
+    });
+
+    // Create panel button
+    var $titleButton =  $('<button/>', {
+      'class': 'h5p-panel-button',
       'tabindex': '0',
-      'aria-selected': (id === 0 ? 'true' : 'false'),
       'aria-expanded': 'false',
       'aria-controls': contentId,
       'html': self.params.panels[id].title,
@@ -109,28 +106,18 @@ H5P.AccordionPapiJo = (function ($) {
             case 38:   // Up
             case 37: { // Left
               // Try to select previous item
-              var $prev = $title.prev().prev();
+              var $prev = $title.prev().prev().children('.h5p-panel-button');
               if ($prev.length) {
-                $prev.attr({
-                  'aria-selected': 'true'
-                }).focus();
-                $title.attr({
-                  'aria-selected': 'false'
-                });
+                $prev.focus();
               }
               return false;
             }
             case 40:   // Down
             case 39: { // Right
               // Try to select next item
-              var $next = $content.next();
+              var $next = $content.next().children('.h5p-panel-button');
               if ($next.length) {
-                $next.attr({
-                  'aria-selected': 'true'
-                }).focus();
-                $title.attr({
-                  'aria-selected': 'false'
-                });
+                $next.focus();
               }
               return false;
             }
@@ -141,9 +128,11 @@ H5P.AccordionPapiJo = (function ($) {
               return false;
             }
           }
-        }
+        },
       }
     });
+
+    $title.append($titleButton);
 
     // Create panel content
     var $content = $('<div>', {
@@ -187,9 +176,8 @@ H5P.AccordionPapiJo = (function ($) {
   Accordion.prototype.collapseExpandedPanels = function () {
     var self = this;
     if (this.$expandedTitle !== undefined) {
-      this.$expandedTitle
-        .attr('aria-expanded', false)
-        .removeClass('h5p-panel-expanded');
+      this.$expandedButton.attr('aria-expanded', false);
+      this.$expandedTitle.removeClass('h5p-panel-expanded');
     }
     if (this.$expandedPanel !== undefined) {
       this.$expandedPanel
@@ -208,11 +196,11 @@ H5P.AccordionPapiJo = (function ($) {
    * @param {jQuery} $title The title of the panel that is to be expanded
    * @param {jQuery} $panel The panel that is to be expanded
    */
-  Accordion.prototype.expandPanel = function($title, $panel) {
+  Accordion.prototype.expandPanel = function($title, $titleButton, $panel) {
     var self = this;
 
-    $title.attr('aria-expanded', true)
-      .addClass('h5p-panel-expanded');
+    $titleButton.attr('aria-expanded', true);
+    $title.addClass('h5p-panel-expanded');
 
     $panel
       .stop(false, true)
@@ -222,6 +210,7 @@ H5P.AccordionPapiJo = (function ($) {
       })
       .attr('aria-hidden', false);
 
+    self.$expandedButton = $titleButton;
     self.$expandedTitle = $title;
     self.$expandedPanel = $panel;
   };
@@ -232,10 +221,10 @@ H5P.AccordionPapiJo = (function ($) {
    * @param {jQuery} $title The title of the panel that is to be collapsed
    * @param {jQuery} $panel The panel that is to be collapsed
    */
-  Accordion.prototype.collapsePanel = function($title, $panel) {
+  Accordion.prototype.collapsePanel = function($title, $titleButton, $panel) {
     var self = this;
-    $title.attr('aria-expanded', false)
-      .removeClass('h5p-panel-expanded');
+    $titleButton.attr('aria-expanded', false)
+    $title.removeClass('h5p-panel-expanded');
     $panel
       .stop(false, true)
       .slideUp(200, function () {
@@ -243,7 +232,7 @@ H5P.AccordionPapiJo = (function ($) {
         self.trigger('resize');
       })
       .attr('aria-hidden', true);
-     self.$expandedTitle = self.$expandedPanel = undefined;
+     self.$expandedTitle = self.$expandedButton = self.$expandedPanel = undefined;
   };
 
   /**
