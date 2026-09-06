@@ -79,6 +79,7 @@ H5P.AccordionPapiJo = (function ($) {
   Accordion.prototype.createPanel = function (id) {
     var self = this;
     var titleId = 'h5p-panel-link-' + this.idPrefix + id;
+    var buttonId = 'h5p-panel-button-' + this.idPrefix + id;
     var contentId = 'h5p-panel-content-' + self.idPrefix + id;
 
     var toggleCollapse = function () {
@@ -111,6 +112,7 @@ H5P.AccordionPapiJo = (function ($) {
 
     // Create panel button
     var $titleButton =  $('<button/>', {
+      'id': buttonId,
       'class': 'h5p-panel-button',
       'tabindex': '0',
       'aria-expanded': 'false',
@@ -156,7 +158,7 @@ H5P.AccordionPapiJo = (function ($) {
       'id': contentId,
       'class': 'h5p-panel-content',
       'role': 'region',
-      'aria-labelledby': titleId,
+      'aria-labelledby': buttonId,
       'aria-hidden': 'true'
     });
 

@@ -116,23 +116,29 @@ test('builds alternating heading/button and region DOM with initial ARIA state',
     assert(button.classes.has('h5p-panel-button'));
     assert(region.classes.has('h5p-panel-content'));
     assert.equal(heading.attributes.has('hidden'), false);
+    assert.ok(button.attributes.get('id'));
     assert.equal(button.attributes.get('tabindex'), '0');
     assert.equal(button.attributes.get('aria-expanded'), 'false');
     assert.equal(button.attributes.get('aria-controls'), region.attributes.get('id'));
     assert.equal(region.attributes.get('role'), 'region');
-    assert.equal(region.attributes.get('aria-labelledby'), heading.attributes.get('id'));
+    assert.equal(region.attributes.get('aria-labelledby'), button.attributes.get('id'));
     assert.equal(region.attributes.get('aria-hidden'), 'true');
     assert(!heading.classes.has('h5p-panel-expanded'));
   }
 });
 
-test('assigns unique heading and region IDs across Accordion instances', () => {
+test('assigns unique heading, button and region IDs across Accordion instances', () => {
   const environment = createEnvironment();
   const first = attachToDocument(environment, createAccordion(environment)).container;
   const second = attachToDocument(environment, createAccordion(environment)).container;
-  const ids = [...first[0].children, ...second[0].children]
-    .map((element) => element.attributes.get('id'));
+  const containers = [first, second];
+  const ids = containers.flatMap((container) => {
+    const panelIds = container[0].children.map((element) => element.attributes.get('id'));
+    const buttonIds = [0, 1, 2].map((index) => panelParts(container, index).button.attributes.get('id'));
+    return [...panelIds, ...buttonIds];
+  });
 
+  assert(ids.every(Boolean));
   assert.equal(new Set(ids).size, ids.length);
 });
 
@@ -737,12 +743,30 @@ test('repeated attach reuses one navigation control without duplicating handlers
   assert.equal(secondNavigation.toggles[0].attributes.get('aria-expanded'), 'true');
 });
 
-test.todo('panel regions are labelled directly by their controlling buttons', () => {
+test('compact and non-compact panel regions are labelled by their controlling buttons', () => {
   const environment = createEnvironment();
-  const { container } = attachToDocument(environment, createAccordion(environment));
-  const { button, region } = panelParts(container, 0);
-  assert.ok(button.attributes.get('id'));
-  assert.equal(region.attributes.get('aria-labelledby'), button.attributes.get('id'));
+  const traditional = attachToDocument(environment, createAccordion(environment)).container;
+  const compact = attachToDocument(environment, createAccordion(environment, {
+    accordionTitle: 'Choose a panel'
+  })).container;
+  const buttonIds = [];
+
+  for (const container of [traditional, compact]) {
+    for (let index = 0; index < 3; index++) {
+      const { button, heading, region } = panelParts(container, index);
+      const buttonId = button.attributes.get('id');
+
+      assert.equal(heading.tagName, 'H2');
+      assert.strictEqual(button.parent, heading);
+      assert.ok(buttonId);
+      assert.equal(button.attributes.get('aria-controls'), region.attributes.get('id'));
+      assert.equal(region.attributes.get('role'), 'region');
+      assert.equal(region.attributes.get('aria-labelledby'), buttonId);
+      buttonIds.push(buttonId);
+    }
+  }
+
+  assert.equal(new Set(buttonIds).size, buttonIds.length);
 });
 
 test('accordionTitle semantics and translations describe compact panel navigation', () => {
