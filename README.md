@@ -1,7 +1,29 @@
-H5P Accordion
-==========
+# H5P.AccordionPapiJo
 
-Accordion content type for H5P
+H5P.AccordionPapiJo is a PapiJo variant of the official H5P Accordion content type. It is based on the upstream work by Joubel and retains the familiar single-open-panel Accordion behavior while adding PapiJo-specific authoring and navigation features.
+
+The current release-preparation version is 1.1.1.
+
+## Compact panel navigation
+
+Compact navigation is enabled when an Accordion has at least two panels and `accordionTitle` is non-empty. The value of `accordionTitle` is displayed as the Accordion title and disclosure control, allowing users to reveal compact panel labels and select a panel without displaying every full-size panel header.
+
+Leaving `accordionTitle` empty disables compact navigation. A single-panel Accordion also uses the traditional interface.
+
+## Allowed panel content
+
+Newly authored panels allow exactly:
+
+- `H5P.AdvancedTextPapiJo 1.1`
+- `H5P.Image 1.1`
+- `H5P.Video 1.6`
+- `H5P.Audio 1.5`
+
+`H5P.TextareaPapiJo` is no longer offered for new panel authoring.
+
+## Packaging
+
+The maintainer creates and verifies `.h5p` packages manually. This repository does not provide or use an automated H5P packaging step.
 
 ## License
 

@@ -332,6 +332,25 @@ test('all manifests, semantics and language files contain valid JSON', () => {
   }
 });
 
+test('library metadata identifies H5P.AccordionPapiJo 1.1.1', () => {
+  const library = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'library.json'), 'utf8'));
+
+  assert.deepEqual(
+    {
+      machineName: library.machineName,
+      majorVersion: library.majorVersion,
+      minorVersion: library.minorVersion,
+      patchVersion: library.patchVersion
+    },
+    {
+      machineName: 'H5P.AccordionPapiJo',
+      majorVersion: 1,
+      minorVersion: 1,
+      patchVersion: 1
+    }
+  );
+});
+
 test('newly authored panels allow exactly four libraries and exclude TextareaPapiJo', () => {
   const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
   const panels = semantics.find((field) => field.name === 'panels');
