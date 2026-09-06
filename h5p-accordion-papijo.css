@@ -107,3 +107,105 @@
   outline-offset: -2px;
   z-index: 1;
 }
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation {
+  padding: var(--h5p-theme-spacing-xs) var(--h5p-theme-spacing-s);
+  border-bottom: solid 1px var(--h5p-theme-stroke-1);
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 2.75em;
+  padding: var(--h5p-theme-spacing-xs) var(--h5p-theme-spacing-s);
+  border: solid 1px var(--h5p-theme-stroke-1);
+  border-radius: var(--h5p-theme-border-radius-medium);
+  background: var(--h5p-theme-ui-base);
+  color: var(--h5p-theme-text-secondary);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: var(--h5p-theme-spacing-xs);
+  border-right: 0.15em solid currentColor;
+  border-bottom: 0.15em solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle[aria-expanded="true"]::before {
+  transform: rotate(45deg);
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle:hover,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:hover {
+  background: var(--h5p-theme-alternative-light);
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle:focus-visible,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--h5p-theme-spacing-xs);
+  max-height: 16rem;
+  margin: var(--h5p-theme-spacing-xs) 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list[hidden] {
+  display: none;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list > .h5p-accordion-papijo-navigation-list-item {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item {
+  min-height: 2.75em;
+  max-width: 100%;
+  padding: var(--h5p-theme-spacing-xs) var(--h5p-theme-spacing-s);
+  border: solid 1px var(--h5p-theme-stroke-1);
+  border-radius: var(--h5p-theme-border-radius-medium);
+  background: var(--h5p-theme-ui-base);
+  color: var(--h5p-theme-text-secondary);
+  font: inherit;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.h5p-accordion-papijo > .h5p-panel-title[hidden] {
+  display: none;
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item-selected {
+  background-color: var(--h5p-theme-main-cta-base);
+  color: var(--h5p-theme-contrast-cta);
+}
+
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item-selected:hover,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item-selected:focus,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item-selected:focus-visible,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item-selected:active {
+  background-color: var(--h5p-theme-main-cta-base);
+  color: var(--h5p-theme-contrast-cta);
+}

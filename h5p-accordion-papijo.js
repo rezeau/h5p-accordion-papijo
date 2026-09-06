@@ -54,6 +54,14 @@ H5P.AccordionPapiJo = (function ($) {
 
       // Create the content
       self.elements = [];
+      self.panelElements = [];
+      if (
+        self.params.panels.length > 1 &&
+        typeof self.params.accordionTitle === 'string' &&
+        self.params.accordionTitle.trim() !== ''
+      ) {
+        self.createNavigation(self.params.accordionTitle.trim());
+      }
       for (var i = 0; i < self.params.panels.length; i++) {
         self.createPanel(i);
       }
@@ -77,9 +85,15 @@ H5P.AccordionPapiJo = (function ($) {
       if (self.$expandedTitle === undefined || !self.$expandedTitle.is($title)) {
         self.collapseExpandedPanels();
         self.expandPanel($title, $titleButton, $content);
+        if (self.$navigation !== undefined) {
+          self.setCompactSelection(id);
+        }
       }
       else {
         self.collapsePanel($title, $titleButton, $content);
+        if (self.$navigation !== undefined) {
+          self.clearCompactSelection();
+        }
       }
 
       // We're running in an iframe, so we must animate the iframe height
@@ -91,6 +105,9 @@ H5P.AccordionPapiJo = (function ($) {
       'id': titleId,
       'class': 'h5p-panel-title',
     });
+    if (self.$navigation !== undefined) {
+      $title.attr('hidden', 'hidden');
+    }
 
     // Create panel button
     var $titleButton =  $('<button/>', {
@@ -149,6 +166,180 @@ H5P.AccordionPapiJo = (function ($) {
     // Gather all content
     self.elements.push($title[0]);
     self.elements.push($content[0]);
+    self.panelElements[id] = {
+      $title: $title,
+      $titleButton: $titleButton,
+      $content: $content
+    };
+  };
+
+  /**
+   * Create compact navigation for selecting a panel.
+   *
+   * @param {string} title Navigation disclosure label
+   */
+  Accordion.prototype.createNavigation = function (title) {
+    var self = this;
+    var toggleId = 'h5p-accordion-navigation-toggle-' + self.idPrefix;
+    var listId = 'h5p-accordion-navigation-list-' + self.idPrefix;
+
+    self.$navigationItems = [];
+
+    self.$navigationToggle = $('<button/>', {
+      'id': toggleId,
+      'class': 'h5p-accordion-papijo-navigation-toggle',
+      'type': 'button',
+      'aria-expanded': 'false',
+      'aria-controls': listId,
+      'html': title,
+      'on': {
+        'click': function () {
+          if (self.$navigationToggle.attr('aria-expanded') === 'true') {
+            self.closeNavigation();
+          }
+          else {
+            self.openNavigation();
+          }
+        }
+      }
+    });
+
+    self.$navigationList = $('<ul/>', {
+      'id': listId,
+      'class': 'h5p-accordion-papijo-navigation-list',
+      'aria-labelledby': toggleId,
+      'hidden': 'hidden',
+      'on': {
+        'keydown': function (event) {
+          if (event.key === 'Escape' || event.keyCode === 27) {
+            event.preventDefault();
+            self.closeNavigation(true);
+          }
+        }
+      }
+    });
+
+    for (var i = 0; i < self.params.panels.length; i++) {
+      self.createNavigationItem(i);
+    }
+
+    self.$navigation = $('<div/>', {
+      'class': 'h5p-accordion-papijo-navigation'
+    })
+      .append(self.$navigationToggle)
+      .append(self.$navigationList);
+
+    self.elements.push(self.$navigation[0]);
+  };
+
+  /**
+   * Add an item to the compact panel navigation.
+   *
+   * @param {number} id Panel index
+   */
+  Accordion.prototype.createNavigationItem = function (id) {
+    var self = this;
+    var $button = $('<button/>', {
+      'class': 'h5p-accordion-papijo-navigation-item',
+      'type': 'button',
+      'html': self.params.panels[id].title,
+      'on': {
+        'click': function () {
+          self.selectPanel(id);
+        }
+      }
+    });
+    var $item = $('<li/>', {
+      'class': 'h5p-accordion-papijo-navigation-list-item'
+    }).append($button);
+
+    self.$navigationList.append($item);
+    self.$navigationItems[id] = $button;
+  };
+
+  /**
+   * Open the compact navigation.
+   */
+  Accordion.prototype.openNavigation = function () {
+    this.$navigationToggle.attr('aria-expanded', true);
+    this.$navigationList.removeAttr('hidden');
+    this.trigger('resize');
+  };
+
+  /**
+   * Close the compact navigation.
+   *
+   * @param {boolean} focusToggle Whether focus should return to the disclosure
+   */
+  Accordion.prototype.closeNavigation = function (focusToggle) {
+    var panelWasOpen = this.$expandedTitle !== undefined;
+
+    if (panelWasOpen) {
+      this.collapsePanel(this.$expandedTitle, this.$expandedButton, this.$expandedPanel);
+      this.clearCompactSelection();
+    }
+
+    this.$navigationToggle.attr('aria-expanded', false);
+    this.$navigationList.attr('hidden', 'hidden');
+    if (focusToggle) {
+      this.$navigationToggle.focus();
+    }
+    this.trigger('resize');
+    if (panelWasOpen) {
+      this.animateResize();
+    }
+  };
+
+  /**
+   * Explicitly open a panel selected through the compact navigation.
+   *
+   * @param {number} id Panel index
+   */
+  Accordion.prototype.selectPanel = function (id) {
+    var panel = this.panelElements[id];
+
+    if (this.$expandedTitle === undefined || !this.$expandedTitle.is(panel.$title)) {
+      this.collapseExpandedPanels();
+      this.expandPanel(panel.$title, panel.$titleButton, panel.$content);
+    }
+
+    this.setCompactSelection(id);
+    panel.$titleButton.focus();
+    this.animateResize();
+  };
+
+  /**
+   * Show and mark the panel selected through compact navigation.
+   *
+   * @param {number} id Panel index
+   */
+  Accordion.prototype.setCompactSelection = function (id) {
+    for (var i = 0; i < this.panelElements.length; i++) {
+      if (i === id) {
+        this.panelElements[i].$title.removeAttr('hidden');
+        this.$navigationItems[i]
+          .addClass('h5p-accordion-papijo-navigation-item-selected')
+          .attr('aria-current', true);
+      }
+      else {
+        this.panelElements[i].$title.attr('hidden', 'hidden');
+        this.$navigationItems[i]
+          .removeClass('h5p-accordion-papijo-navigation-item-selected')
+          .removeAttr('aria-current');
+      }
+    }
+  };
+
+  /**
+   * Clear compact selection when no panel is open.
+   */
+  Accordion.prototype.clearCompactSelection = function () {
+    for (var i = 0; i < this.panelElements.length; i++) {
+      this.panelElements[i].$title.attr('hidden', 'hidden');
+      this.$navigationItems[i]
+        .removeClass('h5p-accordion-papijo-navigation-item-selected')
+        .removeAttr('aria-current');
+    }
   };
 
   /**

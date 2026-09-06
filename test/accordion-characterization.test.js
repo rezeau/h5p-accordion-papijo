@@ -38,6 +38,7 @@ const NAVIGATION_CLASSES = {
   container: 'h5p-accordion-papijo-navigation',
   item: 'h5p-accordion-papijo-navigation-item',
   list: 'h5p-accordion-papijo-navigation-list',
+  selectedItem: 'h5p-accordion-papijo-navigation-item-selected',
   toggle: 'h5p-accordion-papijo-navigation-toggle'
 };
 
@@ -114,6 +115,7 @@ test('builds alternating heading/button and region DOM with initial ARIA state',
     assert(heading.classes.has('h5p-panel-title'));
     assert(button.classes.has('h5p-panel-button'));
     assert(region.classes.has('h5p-panel-content'));
+    assert.equal(heading.attributes.has('hidden'), false);
     assert.equal(button.attributes.get('tabindex'), '0');
     assert.equal(button.attributes.get('aria-expanded'), 'false');
     assert.equal(button.attributes.get('aria-controls'), region.attributes.get('id'));
@@ -414,7 +416,7 @@ test('compact navigation is absent when accordionTitle contains only whitespace'
   assert.deepEqual(navigationParts(container).containers, []);
 });
 
-test.todo('compact navigation is present with at least two panels and a trimmed non-empty title', () => {
+test('compact navigation is present with at least two panels and a trimmed non-empty title', () => {
   const environment = createEnvironment();
   const { navigation } = attachAccordionWithNavigation(environment, {
     accordionTitle: 'Choose a panel',
@@ -424,7 +426,7 @@ test.todo('compact navigation is present with at least two panels and a trimmed 
   assert.equal(navigation.toggles[0].innerHTML, 'Choose a panel');
 });
 
-test.todo('legacy multi-panel content with accordionTitle receives navigation automatically', () => {
+test('legacy multi-panel content with accordionTitle receives navigation automatically', () => {
   const environment = createEnvironment();
   const legacyParams = {
     accordionTitle: 'Legacy navigation title',
@@ -439,7 +441,7 @@ test.todo('legacy multi-panel content with accordionTitle receives navigation au
   assert.equal(navigation.toggles[0].innerHTML, 'Legacy navigation title');
 });
 
-test.todo('navigation title control is a native type=button button', () => {
+test('navigation title control is a native type=button button', () => {
   const environment = createEnvironment();
   const { navigation } = attachAccordionWithNavigation(environment);
   const toggle = navigation.toggles[0];
@@ -448,9 +450,10 @@ test.todo('navigation title control is a native type=button button', () => {
   assert.equal(toggle.attributes.get('type'), 'button');
   assert.equal(toggle.attributes.has('role'), false);
   assert.equal(toggle.attributes.has('aria-haspopup'), false);
+  assert.equal(toggle.attributes.has('aria-pressed'), false);
 });
 
-test.todo('navigation title and list IDs are unique across Accordion instances', () => {
+test('navigation title and list IDs are unique across Accordion instances', () => {
   const environment = createEnvironment();
   const first = attachAccordionWithNavigation(environment).navigation;
   const second = attachAccordionWithNavigation(environment).navigation;
@@ -465,7 +468,7 @@ test.todo('navigation title and list IDs are unique across Accordion instances',
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test.todo('navigation title has correct initial disclosure ARIA and controls its list', () => {
+test('navigation title has correct initial disclosure ARIA and controls its list', () => {
   const environment = createEnvironment();
   const { navigation } = attachAccordionWithNavigation(environment);
   const toggle = navigation.toggles[0];
@@ -477,7 +480,7 @@ test.todo('navigation title has correct initial disclosure ARIA and controls its
   assert.equal(list.attributes.has('hidden'), true);
 });
 
-test.todo('navigation uses an ordinary inline list without menu roles', () => {
+test('navigation uses an ordinary inline list without menu roles', () => {
   const environment = createEnvironment();
   const { navigation } = attachAccordionWithNavigation(environment);
   const list = navigation.lists[0];
@@ -489,7 +492,7 @@ test.todo('navigation uses an ordinary inline list without menu roles', () => {
   }
 });
 
-test.todo('navigation has one native selection button per panel in panel order', () => {
+test('navigation has one native selection button per panel in panel order', () => {
   const environment = createEnvironment();
   const panels = [panel('Alpha'), panel('Beta'), panel('Gamma')];
   const { navigation } = attachAccordionWithNavigation(environment, { panels });
@@ -502,22 +505,35 @@ test.todo('navigation has one native selection button per panel in panel order',
   }
 });
 
-test.todo('navigation title button toggles the list open and closed', () => {
+test('compact mode initially hides every original panel header and panel content', () => {
   const environment = createEnvironment();
-  const { navigation } = attachAccordionWithNavigation(environment);
+  const { container } = attachAccordionWithNavigation(environment);
+
+  for (let index = 0; index < 3; index++) {
+    const { heading, region } = panelParts(container, index);
+    assert.equal(heading.attributes.has('hidden'), true);
+    assert.equal(region.attributes.get('aria-hidden'), 'true');
+  }
+});
+
+test('navigation title button toggles the list open and closed', () => {
+  const environment = createEnvironment();
+  const { accordion, navigation } = attachAccordionWithNavigation(environment);
   const toggle = navigation.toggles[0];
   const list = navigation.lists[0];
 
   environment.fire(toggle, 'click');
   assert.equal(toggle.attributes.get('aria-expanded'), 'true');
   assert.equal(list.attributes.has('hidden'), false);
+  assert.equal(accordion._triggered.filter((event) => event.type === 'resize').length, 1);
 
   environment.fire(toggle, 'click');
   assert.equal(toggle.attributes.get('aria-expanded'), 'false');
   assert.equal(list.attributes.has('hidden'), true);
+  assert.equal(accordion._triggered.filter((event) => event.type === 'resize').length, 2);
 });
 
-test.todo('Escape inside open navigation closes it and returns focus to the title', () => {
+test('Escape inside open navigation closes it and returns focus to the title', () => {
   const environment = createEnvironment();
   const { navigation } = attachAccordionWithNavigation(environment);
   const toggle = navigation.toggles[0];
@@ -536,7 +552,7 @@ test.todo('Escape inside open navigation closes it and returns focus to the titl
   assert.strictEqual(environment.activeElement, toggle);
 });
 
-test.todo('selecting a navigation item opens its target panel and closes a different panel', () => {
+test('selecting a navigation item opens its target panel and closes a different panel', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);
   const first = panelParts(container, 0);
@@ -552,7 +568,7 @@ test.todo('selecting a navigation item opens its target panel and closes a diffe
   assert.equal(second.region.attributes.get('aria-hidden'), 'false');
 });
 
-test.todo('selecting the already-open panel through navigation leaves it open', () => {
+test('selecting the already-open panel through navigation leaves it open', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);
   const first = panelParts(container, 0);
@@ -564,9 +580,11 @@ test.todo('selecting the already-open panel through navigation leaves it open', 
   assert.equal(first.button.attributes.get('aria-expanded'), 'true');
   assert.equal(first.region.attributes.get('aria-hidden'), 'false');
   assert(first.heading.classes.has('h5p-panel-expanded'));
+  assert(navigation.items[0].classes.has(NAVIGATION_CLASSES.selectedItem));
+  assert.equal(navigation.lists[0].attributes.has('hidden'), false);
 });
 
-test.todo('navigation closes and focus moves to the selected panel header after selection', () => {
+test('navigation stays open and focus moves to the selected panel header after selection', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);
   const second = panelParts(container, 1);
@@ -574,12 +592,117 @@ test.todo('navigation closes and focus moves to the selected panel header after 
   environment.fire(navigation.toggles[0], 'click');
   environment.fire(navigation.items[1], 'click');
 
-  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'false');
-  assert.equal(navigation.lists[0].attributes.has('hidden'), true);
+  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'true');
+  assert.equal(navigation.lists[0].attributes.has('hidden'), false);
   assert.strictEqual(environment.activeElement, second.button);
 });
 
-test.todo('navigation selection preserves the existing resize behavior', () => {
+test('selection shows only its large header and content and marks only its compact label', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[1], 'click');
+
+  for (let index = 0; index < 3; index++) {
+    const { heading, region } = panelParts(container, index);
+    const isSelected = index === 1;
+    assert.equal(heading.attributes.has('hidden'), !isSelected);
+    assert.equal(region.attributes.get('aria-hidden'), isSelected ? 'false' : 'true');
+    assert.equal(navigation.items[index].classes.has(NAVIGATION_CLASSES.selectedItem), isSelected);
+    assert.equal(navigation.items[index].attributes.get('aria-current'), isSelected ? 'true' : undefined);
+  }
+});
+
+test('selected compact label uses the H5P selected background and foreground theme colors', () => {
+  const css = fs.readFileSync(path.join(PROJECT_ROOT, 'h5p-accordion-papijo.css'), 'utf8');
+
+  assert.match(
+    css,
+    /\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item-selected\s*{[^}]*background(?:-color)?:\s*var\(--h5p-theme-main-cta-base\);[^}]*color:\s*var\(--h5p-theme-contrast-cta\);/s
+  );
+  const selectedInteractionRule = css.match(
+    /\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item-selected:hover,[^{]*\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item-selected:focus,[^{]*\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item-selected:focus-visible,[^{]*\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item-selected:active\s*{([^}]*)}/s
+  );
+  assert.ok(selectedInteractionRule, 'expected a selected-state interaction rule');
+  assert.match(selectedInteractionRule[1], /background(?:-color)?:\s*var\(--h5p-theme-main-cta-base\);/);
+  assert.match(selectedInteractionRule[1], /color:\s*var\(--h5p-theme-contrast-cta\);/);
+});
+
+test('selecting another compact label transfers the one selected state and visible panel', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[0], 'click');
+  environment.fire(navigation.items[2], 'click');
+
+  assert.equal(
+    navigation.items.filter((item) => item.classes.has(NAVIGATION_CLASSES.selectedItem)).length,
+    1
+  );
+  for (let index = 0; index < 3; index++) {
+    const { heading, region } = panelParts(container, index);
+    const isSelected = index === 2;
+    assert.equal(heading.attributes.has('hidden'), !isSelected);
+    assert.equal(region.attributes.get('aria-hidden'), isSelected ? 'false' : 'true');
+    assert.equal(navigation.items[index].classes.has(NAVIGATION_CLASSES.selectedItem), isSelected);
+  }
+});
+
+test('closing the selected panel through its large header clears compact selection', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+  const first = panelParts(container, 0);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[0], 'click');
+  environment.fire(first.button, 'click');
+
+  assert.equal(first.region.attributes.get('aria-hidden'), 'true');
+  assert.equal(first.heading.attributes.has('hidden'), true);
+  assert.equal(
+    navigation.items.some((item) => item.classes.has(NAVIGATION_CLASSES.selectedItem)),
+    false
+  );
+  assert.equal(navigation.lists[0].attributes.has('hidden'), false);
+  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'true');
+});
+
+test('title fully collapses an open panel and reopens with no panel or compact selection', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+  const first = panelParts(container, 0);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[0], 'click');
+  environment.fire(navigation.toggles[0], 'click');
+
+  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'false');
+  assert.equal(navigation.lists[0].attributes.has('hidden'), true);
+  assert.equal(first.button.attributes.get('aria-expanded'), 'false');
+  assert.equal(first.heading.attributes.has('hidden'), true);
+  assert.equal(first.region.attributes.get('aria-hidden'), 'true');
+  assert.equal(
+    navigation.items.some((item) => item.classes.has(NAVIGATION_CLASSES.selectedItem)),
+    false
+  );
+
+  environment.fire(navigation.toggles[0], 'click');
+
+  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'true');
+  assert.equal(navigation.lists[0].attributes.has('hidden'), false);
+  for (let index = 0; index < 3; index++) {
+    const { button, heading, region } = panelParts(container, index);
+    assert.equal(button.attributes.get('aria-expanded'), 'false');
+    assert.equal(heading.attributes.has('hidden'), true);
+    assert.equal(region.attributes.get('aria-hidden'), 'true');
+    assert.equal(navigation.items[index].classes.has(NAVIGATION_CLASSES.selectedItem), false);
+    assert.equal(navigation.items[index].attributes.has('aria-current'), false);
+  }
+});
+
+test('navigation selection preserves the existing resize behavior', () => {
   const environment = createEnvironment();
   const { accordion, navigation } = attachAccordionWithNavigation(environment);
 
@@ -590,7 +713,7 @@ test.todo('navigation selection preserves the existing resize behavior', () => {
   assert(accordion._triggered.some((event) => event.type === 'resize'));
 });
 
-test.todo('multiple compact navigation controls remain behaviorally isolated', () => {
+test('multiple compact navigation controls remain behaviorally isolated', () => {
   const environment = createEnvironment();
   const first = attachAccordionWithNavigation(environment).navigation;
   const second = attachAccordionWithNavigation(environment).navigation;
@@ -601,9 +724,16 @@ test.todo('multiple compact navigation controls remain behaviorally isolated', (
   assert.equal(first.lists[0].attributes.has('hidden'), false);
   assert.equal(second.toggles[0].attributes.get('aria-expanded'), 'false');
   assert.equal(second.lists[0].attributes.has('hidden'), true);
+
+  environment.fire(first.items[1], 'click');
+  assert(first.items[1].classes.has(NAVIGATION_CLASSES.selectedItem));
+  assert.equal(
+    second.items.some((item) => item.classes.has(NAVIGATION_CLASSES.selectedItem)),
+    false
+  );
 });
 
-test.todo('repeated attach reuses one navigation control without duplicating handlers', () => {
+test('repeated attach reuses one navigation control without duplicating handlers', () => {
   const environment = createEnvironment();
   const accordion = createAccordion(environment, { accordionTitle: 'Choose a panel' });
   const firstContainer = attachToDocument(environment, accordion).container;

@@ -164,6 +164,13 @@ class JQueryCollection {
     return this;
   }
 
+  removeAttr(name) {
+    for (const element of this.elements) {
+      element.attributes.delete(name);
+    }
+    return this;
+  }
+
   is(other) {
     return this.elements[0] === normalizeElements(other)[0];
   }
@@ -373,8 +380,14 @@ function isConnected(element) {
 }
 
 function panelParts(container, panelIndex) {
-  const heading = container[0].children[panelIndex * 2];
-  const region = container[0].children[(panelIndex * 2) + 1];
+  const headings = container[0].children.filter((element) =>
+    element.classes.has('h5p-panel-title')
+  );
+  const regions = container[0].children.filter((element) =>
+    element.classes.has('h5p-panel-content')
+  );
+  const heading = headings[panelIndex];
+  const region = regions[panelIndex];
   return {
     button: heading.children[0],
     heading,
