@@ -1,10 +1,10 @@
 [
   {
-    "label": "Accordion Title",
-    "importance": "low",
+    "label": "Panel navigation label",
+    "importance": "medium",
     "name": "accordionTitle",
     "type": "text",
-    "description": "Optional title for your Accordion content",
+    "description": "Used as the compact panel navigation and disclosure title when the Accordion has at least two panels. Leaving it empty disables compact navigation; single-panel Accordions do not show it.",
     "optional": true
   },
   {

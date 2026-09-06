@@ -1,15 +1,15 @@
 {
   "semantics": [
     {
-      "label": "Titre de section",
-      "description": "Optional title for your Accordion content"
+      "label": "Libellé de navigation des panneaux",
+      "description": "Utilisé comme titre du volet de navigation compacte et de son bouton d’affichage lorsque l’accordéon comporte au moins deux panneaux. Laisser ce champ vide désactive la navigation compacte ; elle n’est pas affichée pour un accordéon à un seul panneau."
     },
     {
-      "label": "Titre de section en tag H (ne modifie pas la taille du bloc de l'en-tête)",
+      "label": "Panneaux",
       "entity": "panneau",
       "field": {
         "label": "Contenu",
-        "entity": "Contenu",
+        "entity": "contenu",
         "fields": [
           {
             "label": "Titre"
@@ -17,14 +17,14 @@
           {
             "label": "Type de contenu",
             "entity": "contenu",
-            "description": "Choisir type de contenu"
+            "description": "Sélectionnez le type de bibliothèque à utiliser pour le contenu."
           }
         ]
       }
     },
     {
-      "label": "Titre de section en tag H (ne modifie pas la taille du bloc de l'en-tête)",
-      "description": "Le tag H définit le titre de chaque section qui est en H2 par défaut. Utiliser H3 si ce titre est imbriqué sous une section en H2. Ne modifie pas la taille du bloc de la section - c'est une question de sémantique.",
+      "label": "Niveau de titre des libellés (sans effet sur leur taille)",
+      "description": "Le niveau de titre utilisé pour les libellés est normalement H2. Utilisez H3 si l’accordéon se trouve sous un titre H2. Ce réglage ne modifie pas la taille des libellés ; il sert uniquement à structurer le contenu de manière sémantique.",
       "options": [
         {
           "label": "H2"

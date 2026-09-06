@@ -745,7 +745,7 @@ test.todo('panel regions are labelled directly by their controlling buttons', ()
   assert.equal(region.attributes.get('aria-labelledby'), button.attributes.get('id'));
 });
 
-test.todo('accordionTitle semantics and translations describe compact panel navigation', () => {
+test('accordionTitle semantics and translations describe compact panel navigation', () => {
   const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
   const english = JSON.parse(
     fs.readFileSync(path.join(PROJECT_ROOT, 'language', '.en.json'), 'utf8')
@@ -756,16 +756,42 @@ test.todo('accordionTitle semantics and translations describe compact panel navi
   const serializedTranslations = JSON.stringify({ english, french });
   const accordionTitle = semantics.find((field) => field.name === 'accordionTitle');
 
+  assert.ok(accordionTitle);
+  assert.equal(accordionTitle.name, 'accordionTitle');
+  assert.equal(accordionTitle.type, 'text');
   assert.equal(accordionTitle.label, 'Panel navigation label');
   assert.equal(accordionTitle.optional, true);
+  assert.equal(accordionTitle.importance, 'medium');
+  assert.match(accordionTitle.description, /compact panel navigation/i);
+  assert.match(accordionTitle.description, /disclosure title/i);
   assert.match(accordionTitle.description, /at least two panels/i);
   assert.match(accordionTitle.description, /leaving it empty disables/i);
+  assert.match(accordionTitle.description, /single-panel Accordions do not show it/i);
   assert.equal(english.semantics.length, semantics.length);
   assert.equal(english.semantics[0].label, 'Panel navigation label');
+  assert.match(english.semantics[0].description, /compact panel navigation/i);
   assert.equal(english.semantics[1].label, 'Panels');
+  assert.equal(english.semantics[1].entity, 'panel');
+  assert.equal(english.semantics[1].field.label, 'Content');
+  assert.deepEqual(
+    english.semantics[1].field.fields.map((field) => field.label),
+    ['Title', 'Content type']
+  );
   assert.match(english.semantics[2].label, /^H tags/);
+  assert.deepEqual(english.semantics[2].options.map((option) => option.label), ['H2', 'H3', 'H4']);
   assert.equal(french.semantics.length, semantics.length);
   assert.equal(french.semantics[0].label, 'Libellé de navigation des panneaux');
+  assert.match(french.semantics[0].description, /au moins deux panneaux/i);
+  assert.match(french.semantics[0].description, /champ vide désactive/i);
+  assert.match(french.semantics[0].description, /un seul panneau/i);
   assert.equal(french.semantics[1].label, 'Panneaux');
+  assert.equal(french.semantics[1].entity, 'panneau');
+  assert.equal(french.semantics[1].field.label, 'Contenu');
+  assert.deepEqual(
+    french.semantics[1].field.fields.map((field) => field.label),
+    ['Titre', 'Type de contenu']
+  );
+  assert.match(french.semantics[2].label, /Niveau de titre/);
+  assert.deepEqual(french.semantics[2].options.map((option) => option.label), ['H2', 'H3', 'H4']);
   assert.doesNotMatch(serializedTranslations, /TODO/);
 });

@@ -1,39 +1,39 @@
 {
   "semantics": [
     {
-      "label": "Panels",
-      "description": "TODO"
+      "label": "Panel navigation label",
+      "description": "Used as the compact panel navigation and disclosure title when the Accordion has at least two panels. Leaving it empty disables compact navigation; single-panel Accordions do not show it."
     },
     {
-      "label": "H tags for labels (does not affect the size of the label)",
-      "entity": "TODO",
+      "label": "Panels",
+      "entity": "panel",
       "field": {
-        "label": "TODO",
-        "entity": "TODO",
+        "label": "Content",
+        "entity": "content",
         "fields": [
           {
-            "label": "TODO"
+            "label": "Title"
           },
           {
-            "label": "TODO",
-            "entity": "TODO",
-            "description": "TODO"
+            "label": "Content type",
+            "entity": "content",
+            "description": "Select your type of library for content."
           }
         ]
       }
     },
     {
-      "label": "TODO",
-      "description": "TODO",
+      "label": "H tags for labels (does not affect the size of the label)",
+      "description": "The h tag used on the labels. Normally H2 but if this belongs under an H2 heading use H3. Does not affect the size of the labels, only used for semantical purposes.",
       "options": [
         {
-          "label": "TODO"
+          "label": "H2"
         },
         {
-          "label": "TODO"
+          "label": "H3"
         },
         {
-          "label": "TODO"
+          "label": "H4"
         }
       ]
     }
