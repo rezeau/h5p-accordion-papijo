@@ -28,7 +28,50 @@ function createAccordion(environment, options = {}) {
     hTag: options.hTag ?? 'h2',
     panels: options.panels ?? [panel('First'), panel('Second'), panel('Third')]
   };
+  if (Object.hasOwn(options, 'accordionTitle')) {
+    params.accordionTitle = options.accordionTitle;
+  }
   return new environment.Accordion(params, options.contentId ?? 42, options.contentData);
+}
+
+const NAVIGATION_CLASSES = {
+  container: 'h5p-accordion-papijo-navigation',
+  item: 'h5p-accordion-papijo-navigation-item',
+  list: 'h5p-accordion-papijo-navigation-list',
+  toggle: 'h5p-accordion-papijo-navigation-toggle'
+};
+
+function descendantsWithClass(element, className) {
+  const matches = [];
+  for (const child of element.children) {
+    if (child.classes.has(className)) {
+      matches.push(child);
+    }
+    matches.push(...descendantsWithClass(child, className));
+  }
+  return matches;
+}
+
+function navigationParts(container) {
+  return {
+    containers: descendantsWithClass(container[0], NAVIGATION_CLASSES.container),
+    items: descendantsWithClass(container[0], NAVIGATION_CLASSES.item),
+    lists: descendantsWithClass(container[0], NAVIGATION_CLASSES.list),
+    toggles: descendantsWithClass(container[0], NAVIGATION_CLASSES.toggle)
+  };
+}
+
+function attachAccordionWithNavigation(environment, options = {}) {
+  const accordion = createAccordion(environment, {
+    accordionTitle: 'Choose a panel',
+    ...options
+  });
+  const { container } = attachToDocument(environment, accordion);
+  const navigation = navigationParts(container);
+  assert.equal(navigation.containers.length, 1, 'expected one compact navigation container');
+  assert.equal(navigation.toggles.length, 1, 'expected one compact navigation toggle');
+  assert.equal(navigation.lists.length, 1, 'expected one compact navigation list');
+  return { accordion, container, navigation };
 }
 
 test('creates one child per panel with the exact current newRunnable arguments', () => {
@@ -281,7 +324,7 @@ test('all manifests, semantics and language files contain valid JSON', () => {
   }
 });
 
-test('semantics allows exactly the current five child libraries', () => {
+test('semantics currently has the historical five child-library options', () => {
   const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
   const panels = semantics.find((field) => field.name === 'panels');
   const content = panels.field.fields.find((field) => field.name === 'content');
@@ -293,6 +336,21 @@ test('semantics allows exactly the current five child libraries', () => {
     'H5P.Audio 1.5',
     'H5P.TextareaPapiJo 1.0'
   ]);
+});
+
+test.todo('newly authored panels allow exactly four libraries and exclude TextareaPapiJo', () => {
+  const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
+  const panels = semantics.find((field) => field.name === 'panels');
+  const content = panels.field.fields.find((field) => field.name === 'content');
+  const intendedOptions = [
+    'H5P.AdvancedTextPapiJo 1.1',
+    'H5P.Image 1.1',
+    'H5P.Video 1.6',
+    'H5P.Audio 1.5'
+  ];
+
+  assert.deepEqual(content.options, intendedOptions);
+  assert.equal(content.options.includes('H5P.TextareaPapiJo 1.0'), false);
 });
 
 test('uses only the PapiJo runtime namespace and root class', () => {
@@ -311,6 +369,258 @@ test('uses only the PapiJo runtime namespace and root class', () => {
   assert.doesNotMatch(css, /\.h5p-accordion(?=[\s.{:#>])/);
 });
 
+test('compact navigation is absent with zero panels', () => {
+  const environment = createEnvironment();
+  const { container } = attachToDocument(environment, createAccordion(environment, {
+    accordionTitle: 'Choose a panel',
+    panels: []
+  }));
+
+  assert.deepEqual(navigationParts(container).containers, []);
+});
+
+test('compact navigation is absent with one panel', () => {
+  const environment = createEnvironment();
+  const { container } = attachToDocument(environment, createAccordion(environment, {
+    accordionTitle: 'Choose a panel',
+    panels: [panel('Only')]
+  }));
+
+  assert.deepEqual(navigationParts(container).containers, []);
+});
+
+test('compact navigation is absent when accordionTitle is missing', () => {
+  const environment = createEnvironment();
+  const { container } = attachToDocument(environment, createAccordion(environment));
+
+  assert.deepEqual(navigationParts(container).containers, []);
+});
+
+test('compact navigation is absent when accordionTitle is empty', () => {
+  const environment = createEnvironment();
+  const { container } = attachToDocument(environment, createAccordion(environment, {
+    accordionTitle: ''
+  }));
+
+  assert.deepEqual(navigationParts(container).containers, []);
+});
+
+test('compact navigation is absent when accordionTitle contains only whitespace', () => {
+  const environment = createEnvironment();
+  const { container } = attachToDocument(environment, createAccordion(environment, {
+    accordionTitle: ' \t\r\n '
+  }));
+
+  assert.deepEqual(navigationParts(container).containers, []);
+});
+
+test.todo('compact navigation is present with at least two panels and a trimmed non-empty title', () => {
+  const environment = createEnvironment();
+  const { navigation } = attachAccordionWithNavigation(environment, {
+    accordionTitle: 'Choose a panel',
+    panels: [panel('First'), panel('Second')]
+  });
+
+  assert.equal(navigation.toggles[0].innerHTML, 'Choose a panel');
+});
+
+test.todo('legacy multi-panel content with accordionTitle receives navigation automatically', () => {
+  const environment = createEnvironment();
+  const legacyParams = {
+    accordionTitle: 'Legacy navigation title',
+    hTag: 'h3',
+    panels: [panel('Legacy first'), panel('Legacy second')]
+  };
+  const accordion = new environment.Accordion(legacyParams, 91, {});
+  const { container } = attachToDocument(environment, accordion);
+  const navigation = navigationParts(container);
+
+  assert.equal(navigation.containers.length, 1);
+  assert.equal(navigation.toggles[0].innerHTML, 'Legacy navigation title');
+});
+
+test.todo('navigation title control is a native type=button button', () => {
+  const environment = createEnvironment();
+  const { navigation } = attachAccordionWithNavigation(environment);
+  const toggle = navigation.toggles[0];
+
+  assert.equal(toggle.tagName, 'BUTTON');
+  assert.equal(toggle.attributes.get('type'), 'button');
+  assert.equal(toggle.attributes.has('role'), false);
+  assert.equal(toggle.attributes.has('aria-haspopup'), false);
+});
+
+test.todo('navigation title and list IDs are unique across Accordion instances', () => {
+  const environment = createEnvironment();
+  const first = attachAccordionWithNavigation(environment).navigation;
+  const second = attachAccordionWithNavigation(environment).navigation;
+  const ids = [
+    first.toggles[0].attributes.get('id'),
+    first.lists[0].attributes.get('id'),
+    second.toggles[0].attributes.get('id'),
+    second.lists[0].attributes.get('id')
+  ];
+
+  assert(ids.every(Boolean));
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test.todo('navigation title has correct initial disclosure ARIA and controls its list', () => {
+  const environment = createEnvironment();
+  const { navigation } = attachAccordionWithNavigation(environment);
+  const toggle = navigation.toggles[0];
+  const list = navigation.lists[0];
+
+  assert.equal(toggle.attributes.get('aria-expanded'), 'false');
+  assert.equal(toggle.attributes.get('aria-controls'), list.attributes.get('id'));
+  assert.equal(list.attributes.get('aria-labelledby'), toggle.attributes.get('id'));
+  assert.equal(list.attributes.has('hidden'), true);
+});
+
+test.todo('navigation uses an ordinary inline list without menu roles', () => {
+  const environment = createEnvironment();
+  const { navigation } = attachAccordionWithNavigation(environment);
+  const list = navigation.lists[0];
+
+  assert.equal(list.tagName, 'UL');
+  assert.notEqual(list.attributes.get('role'), 'menu');
+  for (const item of navigation.items) {
+    assert.notEqual(item.attributes.get('role'), 'menuitem');
+  }
+});
+
+test.todo('navigation has one native selection button per panel in panel order', () => {
+  const environment = createEnvironment();
+  const panels = [panel('Alpha'), panel('Beta'), panel('Gamma')];
+  const { navigation } = attachAccordionWithNavigation(environment, { panels });
+
+  assert.equal(navigation.items.length, panels.length);
+  assert.deepEqual(navigation.items.map((item) => item.innerHTML), ['Alpha', 'Beta', 'Gamma']);
+  for (const item of navigation.items) {
+    assert.equal(item.tagName, 'BUTTON');
+    assert.equal(item.attributes.get('type'), 'button');
+  }
+});
+
+test.todo('navigation title button toggles the list open and closed', () => {
+  const environment = createEnvironment();
+  const { navigation } = attachAccordionWithNavigation(environment);
+  const toggle = navigation.toggles[0];
+  const list = navigation.lists[0];
+
+  environment.fire(toggle, 'click');
+  assert.equal(toggle.attributes.get('aria-expanded'), 'true');
+  assert.equal(list.attributes.has('hidden'), false);
+
+  environment.fire(toggle, 'click');
+  assert.equal(toggle.attributes.get('aria-expanded'), 'false');
+  assert.equal(list.attributes.has('hidden'), true);
+});
+
+test.todo('Escape inside open navigation closes it and returns focus to the title', () => {
+  const environment = createEnvironment();
+  const { navigation } = attachAccordionWithNavigation(environment);
+  const toggle = navigation.toggles[0];
+  const list = navigation.lists[0];
+
+  environment.fire(toggle, 'click');
+  environment.$(navigation.items[0]).focus();
+  environment.fire(list, 'keydown', {
+    key: 'Escape',
+    keyCode: 27,
+    preventDefault() {}
+  });
+
+  assert.equal(toggle.attributes.get('aria-expanded'), 'false');
+  assert.equal(list.attributes.has('hidden'), true);
+  assert.strictEqual(environment.activeElement, toggle);
+});
+
+test.todo('selecting a navigation item opens its target panel and closes a different panel', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+  const first = panelParts(container, 0);
+  const second = panelParts(container, 1);
+
+  environment.fire(first.button, 'click');
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[1], 'click');
+
+  assert.equal(first.button.attributes.get('aria-expanded'), 'false');
+  assert.equal(first.region.attributes.get('aria-hidden'), 'true');
+  assert.equal(second.button.attributes.get('aria-expanded'), 'true');
+  assert.equal(second.region.attributes.get('aria-hidden'), 'false');
+});
+
+test.todo('selecting the already-open panel through navigation leaves it open', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+  const first = panelParts(container, 0);
+
+  environment.fire(first.button, 'click');
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[0], 'click');
+
+  assert.equal(first.button.attributes.get('aria-expanded'), 'true');
+  assert.equal(first.region.attributes.get('aria-hidden'), 'false');
+  assert(first.heading.classes.has('h5p-panel-expanded'));
+});
+
+test.todo('navigation closes and focus moves to the selected panel header after selection', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+  const second = panelParts(container, 1);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[1], 'click');
+
+  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'false');
+  assert.equal(navigation.lists[0].attributes.has('hidden'), true);
+  assert.strictEqual(environment.activeElement, second.button);
+});
+
+test.todo('navigation selection preserves the existing resize behavior', () => {
+  const environment = createEnvironment();
+  const { accordion, navigation } = attachAccordionWithNavigation(environment);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[1], 'click');
+  environment.clock.tick(200);
+
+  assert(accordion._triggered.some((event) => event.type === 'resize'));
+});
+
+test.todo('multiple compact navigation controls remain behaviorally isolated', () => {
+  const environment = createEnvironment();
+  const first = attachAccordionWithNavigation(environment).navigation;
+  const second = attachAccordionWithNavigation(environment).navigation;
+
+  environment.fire(first.toggles[0], 'click');
+
+  assert.equal(first.toggles[0].attributes.get('aria-expanded'), 'true');
+  assert.equal(first.lists[0].attributes.has('hidden'), false);
+  assert.equal(second.toggles[0].attributes.get('aria-expanded'), 'false');
+  assert.equal(second.lists[0].attributes.has('hidden'), true);
+});
+
+test.todo('repeated attach reuses one navigation control without duplicating handlers', () => {
+  const environment = createEnvironment();
+  const accordion = createAccordion(environment, { accordionTitle: 'Choose a panel' });
+  const firstContainer = attachToDocument(environment, accordion).container;
+  const firstNavigation = navigationParts(firstContainer);
+  assert.equal(firstNavigation.containers.length, 1);
+  const originalNavigation = firstNavigation.containers[0];
+
+  const secondContainer = environment.createContainer();
+  accordion.attach(secondContainer);
+  const secondNavigation = navigationParts(secondContainer);
+
+  assert.equal(secondNavigation.containers.length, 1);
+  assert.strictEqual(secondNavigation.containers[0], originalNavigation);
+  environment.fire(secondNavigation.toggles[0], 'click');
+  assert.equal(secondNavigation.toggles[0].attributes.get('aria-expanded'), 'true');
+});
+
 test.todo('panel regions are labelled directly by their controlling buttons', () => {
   const environment = createEnvironment();
   const { container } = attachToDocument(environment, createAccordion(environment));
@@ -319,7 +629,8 @@ test.todo('panel regions are labelled directly by their controlling buttons', ()
   assert.equal(region.attributes.get('aria-labelledby'), button.attributes.get('id'));
 });
 
-test.todo('translation files match the semantics field order and contain no placeholders', () => {
+test.todo('accordionTitle semantics and translations describe compact panel navigation', () => {
+  const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
   const english = JSON.parse(
     fs.readFileSync(path.join(PROJECT_ROOT, 'language', '.en.json'), 'utf8')
   );
@@ -327,16 +638,18 @@ test.todo('translation files match the semantics field order and contain no plac
     fs.readFileSync(path.join(PROJECT_ROOT, 'language', 'fr.json'), 'utf8')
   );
   const serializedTranslations = JSON.stringify({ english, french });
+  const accordionTitle = semantics.find((field) => field.name === 'accordionTitle');
 
-  assert.equal(english.semantics.length, 2);
-  assert.equal(english.semantics[0].label, 'Panels');
-  assert.match(english.semantics[1].label, /^H tags/);
-  assert.equal(french.semantics.length, 2);
-  assert.equal(french.semantics[0].label, 'Panneaux');
+  assert.equal(accordionTitle.label, 'Panel navigation label');
+  assert.equal(accordionTitle.optional, true);
+  assert.match(accordionTitle.description, /at least two panels/i);
+  assert.match(accordionTitle.description, /leaving it empty disables/i);
+  assert.equal(english.semantics.length, semantics.length);
+  assert.equal(english.semantics[0].label, 'Panel navigation label');
+  assert.equal(english.semantics[1].label, 'Panels');
+  assert.match(english.semantics[2].label, /^H tags/);
+  assert.equal(french.semantics.length, semantics.length);
+  assert.equal(french.semantics[0].label, 'Libellé de navigation des panneaux');
+  assert.equal(french.semantics[1].label, 'Panneaux');
   assert.doesNotMatch(serializedTranslations, /TODO/);
-});
-
-test.todo('the obsolete accordionTitle authoring field is removed from semantics', () => {
-  const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
-  assert.equal(semantics.some((field) => field.name === 'accordionTitle'), false);
 });
