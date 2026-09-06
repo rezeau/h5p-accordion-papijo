@@ -326,21 +326,7 @@ test('all manifests, semantics and language files contain valid JSON', () => {
   }
 });
 
-test('semantics currently has the historical five child-library options', () => {
-  const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
-  const panels = semantics.find((field) => field.name === 'panels');
-  const content = panels.field.fields.find((field) => field.name === 'content');
-
-  assert.deepEqual(content.options, [
-    'H5P.AdvancedTextPapiJo 1.1',
-    'H5P.Image 1.1',
-    'H5P.Video 1.6',
-    'H5P.Audio 1.5',
-    'H5P.TextareaPapiJo 1.0'
-  ]);
-});
-
-test.todo('newly authored panels allow exactly four libraries and exclude TextareaPapiJo', () => {
+test('newly authored panels allow exactly four libraries and exclude TextareaPapiJo', () => {
   const semantics = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'semantics.json'), 'utf8'));
   const panels = semantics.find((field) => field.name === 'panels');
   const content = panels.field.fields.find((field) => field.name === 'content');
