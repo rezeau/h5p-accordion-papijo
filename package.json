@@ -1,0 +1,9 @@
+{
+  "name": "h5p-accordion-papijo",
+  "version": "0.0.0-private",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "check:syntax": "node --check h5p-accordion-papijo.js"
+  }
+}
