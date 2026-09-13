@@ -2,7 +2,7 @@
 
 H5P.AccordionPapiJo is a PapiJo variant of the official H5P Accordion content type. It is based on the upstream work by Joubel and retains the familiar single-open-panel Accordion behavior while adding PapiJo-specific authoring and navigation features.
 
-The current release-preparation version is 1.1.2.
+The current release-preparation version is 1.1.3.
 
 ## Compact panel navigation
 
