@@ -92,6 +92,75 @@ test('creates one child per panel with the exact current newRunnable arguments',
   assert.strictEqual(accordion.contentData, contentData);
 });
 
+test('forwards every child resize event from the Accordion', () => {
+  const environment = createEnvironment();
+  const accordion = createAccordion(environment, { panels: [panel('Only')] });
+  const child = accordion.instances[0];
+
+  child.trigger('resize');
+  child.trigger('resize');
+
+  assert.equal(accordion._triggered.filter((event) => event.type === 'resize').length, 2);
+});
+
+test('registers one child resize listener even when Accordion is attached repeatedly', () => {
+  const environment = createEnvironment();
+  const accordion = createAccordion(environment, { panels: [panel('Only')] });
+  const child = accordion.instances[0];
+
+  accordion.attach(environment.createContainer());
+  accordion.attach(environment.createContainer());
+  child.trigger('resize');
+
+  assert.equal(child._listeners.resize.length, 1);
+  assert.equal(accordion._triggered.filter((event) => event.type === 'resize').length, 1);
+});
+
+test('forwards child expansion resize after the panel animation has finished', () => {
+  const environment = createEnvironment();
+  const accordion = createAccordion(environment, { panels: [panel('Only')] });
+  const { container } = attachToDocument(environment, accordion);
+  const { button } = panelParts(container, 0);
+
+  environment.fire(button, 'click');
+  environment.clock.tick(200);
+  const resizeCountAfterAnimation = accordion._triggered
+    .filter((event) => event.type === 'resize').length;
+
+  accordion.instances[0].dynamicHeight = 300;
+  accordion.instances[0].trigger('resize');
+
+  assert.equal(environment.clock.pendingCount(), 0);
+  assert.equal(
+    accordion._triggered.filter((event) => event.type === 'resize').length,
+    resizeCountAfterAnimation + 1
+  );
+});
+
+test('forwards child shrink resize after dynamically added content contracts', () => {
+  const environment = createEnvironment();
+  const accordion = createAccordion(environment, { panels: [panel('Only')] });
+  const { container } = attachToDocument(environment, accordion);
+  const { button } = panelParts(container, 0);
+  const child = accordion.instances[0];
+
+  environment.fire(button, 'click');
+  environment.clock.tick(200);
+  child.dynamicHeight = 300;
+  child.trigger('resize');
+  const resizeCountAfterExpansion = accordion._triggered
+    .filter((event) => event.type === 'resize').length;
+
+  child.dynamicHeight = 100;
+  child.trigger('resize');
+
+  assert.equal(environment.clock.pendingCount(), 0);
+  assert.equal(
+    accordion._triggered.filter((event) => event.type === 'resize').length,
+    resizeCountAfterExpansion + 1
+  );
+});
+
 test('builds alternating heading/button and region DOM with initial ARIA state', () => {
   const environment = createEnvironment();
   const accordion = createAccordion(environment);

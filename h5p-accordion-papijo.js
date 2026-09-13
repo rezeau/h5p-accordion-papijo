@@ -18,6 +18,8 @@ H5P.AccordionPapiJo = (function ($) {
    * @param {Object} contentData Object containing task specific content data
    */
   function Accordion(params, contentId, contentData) {
+    var self = this;
+
     this.contentId = contentId;
     H5P.EventDispatcher.call(this);
 
@@ -33,6 +35,9 @@ H5P.AccordionPapiJo = (function ($) {
 
     for (var i = 0; i < this.params.panels.length; i++) {
       this.instances[i] = H5P.newRunnable(this.params.panels[i].content, contentId);
+      this.instances[i].on('resize', function () {
+        self.trigger('resize');
+      });
     }
 
     this.idPrefix = (nextIdPrefix++) + '-';

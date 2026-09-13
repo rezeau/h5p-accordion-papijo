@@ -334,7 +334,7 @@ function createEnvironment() {
     EventDispatcher,
     jQuery: jquery,
     newRunnable(...args) {
-      const child = {
+      const child = Object.assign(new EventDispatcher(), {
         attachCount: 0,
         attach($container) {
           this.attachCount++;
@@ -342,7 +342,7 @@ function createEnvironment() {
           environment.childAttachTimeline.push({ child, isConnected: isConnected($container[0]) });
           environment.timeline.push({ child, kind: 'childAttach' });
         }
-      };
+      });
       environment.newRunnableCalls.push({ args, child });
       return child;
     }
