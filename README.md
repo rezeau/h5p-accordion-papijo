@@ -2,11 +2,11 @@
 
 H5P.AccordionPapiJo is a PapiJo variant of the official H5P Accordion content type. It is based on the upstream work by Joubel and retains the familiar single-open-panel Accordion behavior while adding PapiJo-specific authoring and navigation features.
 
-The current release-preparation version is 1.1.3.
+The current release-preparation version is 1.1.4.
 
 ## Compact panel navigation
 
-Compact navigation is enabled when an Accordion has at least two panels and `accordionTitle` is non-empty. The value of `accordionTitle` is displayed as the Accordion title and disclosure control, allowing users to reveal compact panel labels and select a panel without displaying every full-size panel header.
+Compact navigation is enabled when an Accordion has at least two panels and `accordionTitle` is non-empty. The value of `accordionTitle` is displayed as the Accordion title and disclosure control. Selecting a compact label displays its panel content directly below the navigation without repeating the traditional large panel heading. Unselected labels have a right-pointing chevron as an opening cue; the selected label is highlighted and has no chevron.
 
 Leaving `accordionTitle` empty disables compact navigation. A single-panel Accordion also uses the traditional interface.
 
