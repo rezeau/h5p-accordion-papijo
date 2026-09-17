@@ -86,6 +86,8 @@ H5P.AccordionPapiJo = (function ($) {
     var titleId = 'h5p-panel-link-' + this.idPrefix + id;
     var buttonId = 'h5p-panel-button-' + this.idPrefix + id;
     var contentId = 'h5p-panel-content-' + self.idPrefix + id;
+    var regionLabelId = self.$navigation === undefined ?
+      buttonId : self.$navigationItems[id].attr('id');
 
     var toggleCollapse = function () {
       if (self.$expandedTitle === undefined || !self.$expandedTitle.is($title)) {
@@ -163,7 +165,7 @@ H5P.AccordionPapiJo = (function ($) {
       'id': contentId,
       'class': 'h5p-panel-content',
       'role': 'region',
-      'aria-labelledby': buttonId,
+      'aria-labelledby': regionLabelId,
       'aria-hidden': 'true'
     });
 
@@ -246,9 +248,14 @@ H5P.AccordionPapiJo = (function ($) {
    */
   Accordion.prototype.createNavigationItem = function (id) {
     var self = this;
+    var buttonId = 'h5p-accordion-navigation-item-' + self.idPrefix + id;
+    var contentId = 'h5p-panel-content-' + self.idPrefix + id;
     var $button = $('<button/>', {
+      'id': buttonId,
       'class': 'h5p-accordion-papijo-navigation-item',
       'type': 'button',
+      'aria-expanded': 'false',
+      'aria-controls': contentId,
       'html': self.params.panels[id].title,
       'on': {
         'click': function () {
@@ -311,7 +318,6 @@ H5P.AccordionPapiJo = (function ($) {
     }
 
     this.setCompactSelection(id);
-    panel.$titleButton.focus();
     this.animateResize();
   };
 
@@ -322,16 +328,17 @@ H5P.AccordionPapiJo = (function ($) {
    */
   Accordion.prototype.setCompactSelection = function (id) {
     for (var i = 0; i < this.panelElements.length; i++) {
+      this.panelElements[i].$title.attr('hidden', 'hidden');
       if (i === id) {
-        this.panelElements[i].$title.removeAttr('hidden');
         this.$navigationItems[i]
           .addClass('h5p-accordion-papijo-navigation-item-selected')
+          .attr('aria-expanded', true)
           .attr('aria-current', true);
       }
       else {
-        this.panelElements[i].$title.attr('hidden', 'hidden');
         this.$navigationItems[i]
           .removeClass('h5p-accordion-papijo-navigation-item-selected')
+          .attr('aria-expanded', false)
           .removeAttr('aria-current');
       }
     }
@@ -345,6 +352,7 @@ H5P.AccordionPapiJo = (function ($) {
       this.panelElements[i].$title.attr('hidden', 'hidden');
       this.$navigationItems[i]
         .removeClass('h5p-accordion-papijo-navigation-item-selected')
+        .attr('aria-expanded', false)
         .removeAttr('aria-current');
     }
   };

@@ -148,8 +148,11 @@
 }
 
 .h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle:hover,
-.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:hover {
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:hover,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:focus,
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:focus-visible {
   background: var(--h5p-theme-alternative-light);
+  color: var(--h5p-theme-text-secondary);
 }
 
 .h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-toggle:focus-visible,

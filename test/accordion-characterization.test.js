@@ -534,16 +534,16 @@ test('navigation title control is a native type=button button', () => {
   assert.equal(toggle.attributes.has('aria-pressed'), false);
 });
 
-test('navigation title and list IDs are unique across Accordion instances', () => {
+test('compact navigation and panel IDs are unique across Accordion instances', () => {
   const environment = createEnvironment();
-  const first = attachAccordionWithNavigation(environment).navigation;
-  const second = attachAccordionWithNavigation(environment).navigation;
-  const ids = [
-    first.toggles[0].attributes.get('id'),
-    first.lists[0].attributes.get('id'),
-    second.toggles[0].attributes.get('id'),
-    second.lists[0].attributes.get('id')
-  ];
+  const first = attachAccordionWithNavigation(environment);
+  const second = attachAccordionWithNavigation(environment);
+  const ids = [first, second].flatMap(({ container, navigation }) => [
+    navigation.toggles[0].attributes.get('id'),
+    navigation.lists[0].attributes.get('id'),
+    ...navigation.items.map((item) => item.attributes.get('id')),
+    ...[0, 1, 2].map((index) => panelParts(container, index).region.attributes.get('id'))
+  ]);
 
   assert(ids.every(Boolean));
   assert.equal(new Set(ids).size, ids.length);
@@ -583,6 +583,9 @@ test('navigation has one native selection button per panel in panel order', () =
   for (const item of navigation.items) {
     assert.equal(item.tagName, 'BUTTON');
     assert.equal(item.attributes.get('type'), 'button');
+    assert.ok(item.attributes.get('id'));
+    assert.ok(item.attributes.get('aria-controls'));
+    assert.equal(item.attributes.get('aria-expanded'), 'false');
   }
 });
 
@@ -649,36 +652,39 @@ test('selecting a navigation item opens its target panel and closes a different 
   assert.equal(second.region.attributes.get('aria-hidden'), 'false');
 });
 
-test('selecting the already-open panel through navigation leaves it open', () => {
+test('selecting the already-selected compact label leaves its panel open and selected', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);
   const first = panelParts(container, 0);
 
-  environment.fire(first.button, 'click');
   environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[0], 'click');
   environment.fire(navigation.items[0], 'click');
 
   assert.equal(first.button.attributes.get('aria-expanded'), 'true');
   assert.equal(first.region.attributes.get('aria-hidden'), 'false');
   assert(first.heading.classes.has('h5p-panel-expanded'));
+  assert.equal(first.heading.attributes.has('hidden'), true);
   assert(navigation.items[0].classes.has(NAVIGATION_CLASSES.selectedItem));
+  assert.equal(navigation.items[0].attributes.get('aria-current'), 'true');
+  assert.equal(navigation.items[0].attributes.get('aria-expanded'), 'true');
   assert.equal(navigation.lists[0].attributes.has('hidden'), false);
 });
 
-test('navigation stays open and focus moves to the selected panel header after selection', () => {
+test('navigation stays open and focus remains on the activated compact label after selection', () => {
   const environment = createEnvironment();
-  const { container, navigation } = attachAccordionWithNavigation(environment);
-  const second = panelParts(container, 1);
+  const { navigation } = attachAccordionWithNavigation(environment);
 
   environment.fire(navigation.toggles[0], 'click');
+  environment.$(navigation.items[1]).focus();
   environment.fire(navigation.items[1], 'click');
 
   assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'true');
   assert.equal(navigation.lists[0].attributes.has('hidden'), false);
-  assert.strictEqual(environment.activeElement, second.button);
+  assert.strictEqual(environment.activeElement, navigation.items[1]);
 });
 
-test('selection shows only its large header and content and marks only its compact label', () => {
+test('selection keeps every large header hidden, shows content and marks only its compact label', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);
 
@@ -688,10 +694,11 @@ test('selection shows only its large header and content and marks only its compa
   for (let index = 0; index < 3; index++) {
     const { heading, region } = panelParts(container, index);
     const isSelected = index === 1;
-    assert.equal(heading.attributes.has('hidden'), !isSelected);
+    assert.equal(heading.attributes.has('hidden'), true);
     assert.equal(region.attributes.get('aria-hidden'), isSelected ? 'false' : 'true');
     assert.equal(navigation.items[index].classes.has(NAVIGATION_CLASSES.selectedItem), isSelected);
     assert.equal(navigation.items[index].attributes.get('aria-current'), isSelected ? 'true' : undefined);
+    assert.equal(navigation.items[index].attributes.get('aria-expanded'), isSelected ? 'true' : 'false');
   }
 });
 
@@ -710,6 +717,21 @@ test('selected compact label uses the H5P selected background and foreground the
   assert.match(selectedInteractionRule[1], /color:\s*var\(--h5p-theme-contrast-cta\);/);
 });
 
+test('unselected compact label focus matches hover without removing the focus outline', () => {
+  const css = fs.readFileSync(path.join(PROJECT_ROOT, 'h5p-accordion-papijo.css'), 'utf8');
+  const interactionRule = css.match(
+    /\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item:hover,[^{]*\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item:focus,[^{]*\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item:focus-visible\s*{([^}]*)}/s
+  );
+
+  assert.ok(interactionRule, 'expected hover, focus and focus-visible to share one rule');
+  assert.match(interactionRule[1], /background:\s*var\(--h5p-theme-alternative-light\);/);
+  assert.match(interactionRule[1], /color:\s*var\(--h5p-theme-text-secondary\);/);
+  assert.match(
+    css,
+    /\.h5p-accordion-papijo[^{}]*\.h5p-accordion-papijo-navigation-item:focus-visible\s*{[^}]*outline:\s*2px solid currentColor;[^}]*outline-offset:\s*2px;/s
+  );
+});
+
 test('selecting another compact label transfers the one selected state and visible panel', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);
@@ -725,29 +747,12 @@ test('selecting another compact label transfers the one selected state and visib
   for (let index = 0; index < 3; index++) {
     const { heading, region } = panelParts(container, index);
     const isSelected = index === 2;
-    assert.equal(heading.attributes.has('hidden'), !isSelected);
+    assert.equal(heading.attributes.has('hidden'), true);
     assert.equal(region.attributes.get('aria-hidden'), isSelected ? 'false' : 'true');
     assert.equal(navigation.items[index].classes.has(NAVIGATION_CLASSES.selectedItem), isSelected);
+    assert.equal(navigation.items[index].attributes.get('aria-current'), isSelected ? 'true' : undefined);
+    assert.equal(navigation.items[index].attributes.get('aria-expanded'), isSelected ? 'true' : 'false');
   }
-});
-
-test('closing the selected panel through its large header clears compact selection', () => {
-  const environment = createEnvironment();
-  const { container, navigation } = attachAccordionWithNavigation(environment);
-  const first = panelParts(container, 0);
-
-  environment.fire(navigation.toggles[0], 'click');
-  environment.fire(navigation.items[0], 'click');
-  environment.fire(first.button, 'click');
-
-  assert.equal(first.region.attributes.get('aria-hidden'), 'true');
-  assert.equal(first.heading.attributes.has('hidden'), true);
-  assert.equal(
-    navigation.items.some((item) => item.classes.has(NAVIGATION_CLASSES.selectedItem)),
-    false
-  );
-  assert.equal(navigation.lists[0].attributes.has('hidden'), false);
-  assert.equal(navigation.toggles[0].attributes.get('aria-expanded'), 'true');
 });
 
 test('title fully collapses an open panel and reopens with no panel or compact selection', () => {
@@ -780,6 +785,7 @@ test('title fully collapses an open panel and reopens with no panel or compact s
     assert.equal(region.attributes.get('aria-hidden'), 'true');
     assert.equal(navigation.items[index].classes.has(NAVIGATION_CLASSES.selectedItem), false);
     assert.equal(navigation.items[index].attributes.has('aria-current'), false);
+    assert.equal(navigation.items[index].attributes.get('aria-expanded'), 'false');
   }
 });
 
@@ -832,30 +838,44 @@ test('repeated attach reuses one navigation control without duplicating handlers
   assert.equal(secondNavigation.toggles[0].attributes.get('aria-expanded'), 'true');
 });
 
-test('compact and non-compact panel regions are labelled by their controlling buttons', () => {
+test('traditional panel regions remain labelled by their original panel buttons', () => {
   const environment = createEnvironment();
   const traditional = attachToDocument(environment, createAccordion(environment)).container;
-  const compact = attachToDocument(environment, createAccordion(environment, {
-    accordionTitle: 'Choose a panel'
-  })).container;
   const buttonIds = [];
 
-  for (const container of [traditional, compact]) {
-    for (let index = 0; index < 3; index++) {
-      const { button, heading, region } = panelParts(container, index);
-      const buttonId = button.attributes.get('id');
+  for (let index = 0; index < 3; index++) {
+    const { button, heading, region } = panelParts(traditional, index);
+    const buttonId = button.attributes.get('id');
 
-      assert.equal(heading.tagName, 'H2');
-      assert.strictEqual(button.parent, heading);
-      assert.ok(buttonId);
-      assert.equal(button.attributes.get('aria-controls'), region.attributes.get('id'));
-      assert.equal(region.attributes.get('role'), 'region');
-      assert.equal(region.attributes.get('aria-labelledby'), buttonId);
-      buttonIds.push(buttonId);
-    }
+    assert.equal(heading.tagName, 'H2');
+    assert.strictEqual(button.parent, heading);
+    assert.ok(buttonId);
+    assert.equal(button.attributes.get('aria-controls'), region.attributes.get('id'));
+    assert.equal(region.attributes.get('role'), 'region');
+    assert.equal(region.attributes.get('aria-labelledby'), buttonId);
+    buttonIds.push(buttonId);
   }
 
   assert.equal(new Set(buttonIds).size, buttonIds.length);
+});
+
+test('compact panel regions are labelled by their visible compact navigation buttons', () => {
+  const environment = createEnvironment();
+  const { container, navigation } = attachAccordionWithNavigation(environment);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[1], 'click');
+
+  for (let index = 0; index < 3; index++) {
+    const { button, heading, region } = panelParts(container, index);
+    const compactButton = navigation.items[index];
+
+    assert.equal(heading.attributes.has('hidden'), true);
+    assert.notEqual(compactButton.attributes.get('id'), button.attributes.get('id'));
+    assert.equal(compactButton.attributes.get('aria-controls'), region.attributes.get('id'));
+    assert.equal(region.attributes.get('role'), 'region');
+    assert.equal(region.attributes.get('aria-labelledby'), compactButton.attributes.get('id'));
+  }
 });
 
 test('accordionTitle semantics and translations describe compact panel navigation', () => {
