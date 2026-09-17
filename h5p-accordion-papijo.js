@@ -92,7 +92,7 @@ H5P.AccordionPapiJo = (function ($) {
     var toggleCollapse = function () {
       if (self.$expandedTitle === undefined || !self.$expandedTitle.is($title)) {
         self.collapseExpandedPanels();
-        self.expandPanel($title, $titleButton, $content);
+        self.expandPanel($title, $titleButton, $content, self.instances[id]);
         if (self.$navigation !== undefined) {
           self.setCompactSelection(id);
         }
@@ -314,7 +314,7 @@ H5P.AccordionPapiJo = (function ($) {
 
     if (this.$expandedTitle === undefined || !this.$expandedTitle.is(panel.$title)) {
       this.collapseExpandedPanels();
-      this.expandPanel(panel.$title, panel.$titleButton, panel.$content);
+      this.expandPanel(panel.$title, panel.$titleButton, panel.$content, this.instances[id]);
     }
 
     this.setCompactSelection(id);
@@ -400,9 +400,11 @@ H5P.AccordionPapiJo = (function ($) {
    * Expand a panel
    *
    * @param {jQuery} $title The title of the panel that is to be expanded
+   * @param {jQuery} $titleButton The button for the panel that is to be expanded
    * @param {jQuery} $panel The panel that is to be expanded
+   * @param {H5P.ContentType} child The child contained by the panel
    */
-  Accordion.prototype.expandPanel = function($title, $titleButton, $panel) {
+  Accordion.prototype.expandPanel = function($title, $titleButton, $panel, child) {
     var self = this;
 
     $titleButton.attr('aria-expanded', true);
@@ -412,7 +414,7 @@ H5P.AccordionPapiJo = (function ($) {
       .stop(false, true)
       .slideDown(200, function () {
         self.stopWorkLoop(self.resizing);
-        self.trigger('resize');
+        child.trigger('resize');
       })
       .attr('aria-hidden', false);
 

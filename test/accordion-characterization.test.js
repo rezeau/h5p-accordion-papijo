@@ -53,6 +53,25 @@ function descendantsWithClass(element, className) {
   return matches;
 }
 
+function isConnected(element) {
+  let current = element;
+  while (current) {
+    if (current.isDocumentRoot) {
+      return true;
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+function resizeCount(dispatcher) {
+  return dispatcher._triggered.filter((event) => event.type === 'resize').length;
+}
+
+function resizeCounts(dispatchers) {
+  return Array.from(dispatchers, resizeCount);
+}
+
 function navigationParts(container) {
   return {
     containers: descendantsWithClass(container[0], NAVIGATION_CLASSES.container),
@@ -331,6 +350,40 @@ test('attaches every child while its panel is detached from the document', () =>
     environment.childAttachTimeline.map((entry) => entry.isConnected),
     [false, false, false]
   );
+});
+
+test('opening a traditional panel resizes only its child after expansion completes', () => {
+  const environment = createEnvironment();
+  const accordion = createAccordion(environment);
+  const { container } = attachToDocument(environment, accordion);
+  const first = panelParts(container, 0);
+  const resizeObservations = [];
+
+  accordion.instances[0].on('resize', () => {
+    resizeObservations.push({
+      connected: isConnected(first.region),
+      display: first.region.display,
+      animation: first.region.animation
+    });
+  });
+
+  environment.fire(first.button, 'click');
+  environment.clock.tick(199);
+
+  assert.deepEqual(resizeCounts(accordion.instances), [0, 0, 0]);
+
+  environment.clock.tick(1);
+
+  assert.deepEqual(resizeCounts(accordion.instances), [1, 0, 0]);
+  assert.deepEqual(resizeObservations, [{
+    connected: true,
+    display: 'block',
+    animation: null
+  }]);
+
+  environment.clock.tick(400);
+  assert.deepEqual(resizeCounts(accordion.instances), [1, 0, 0]);
+  assert.equal(environment.clock.pendingCount(), 0);
 });
 
 test('resize work runs during a transition and stops when it completes', () => {
@@ -811,6 +864,73 @@ test('navigation selection preserves the existing resize behavior', () => {
   environment.clock.tick(200);
 
   assert(accordion._triggered.some((event) => event.type === 'resize'));
+});
+
+test('opening a compact panel resizes only its child after expansion completes', () => {
+  const environment = createEnvironment();
+  const { accordion, container, navigation } = attachAccordionWithNavigation(environment);
+  const second = panelParts(container, 1);
+  const resizeObservations = [];
+
+  accordion.instances[1].on('resize', () => {
+    resizeObservations.push({
+      connected: isConnected(second.region),
+      display: second.region.display,
+      animation: second.region.animation
+    });
+  });
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.$(navigation.items[1]).focus();
+  environment.fire(navigation.items[1], 'click');
+  environment.clock.tick(199);
+
+  assert.deepEqual(resizeCounts(accordion.instances), [0, 0, 0]);
+
+  environment.clock.tick(1);
+
+  assert.deepEqual(resizeCounts(accordion.instances), [0, 1, 0]);
+  assert.deepEqual(resizeObservations, [{
+    connected: true,
+    display: 'block',
+    animation: null
+  }]);
+  assert.equal(second.region.attributes.get('aria-hidden'), 'false');
+  assert(navigation.items[1].classes.has(NAVIGATION_CLASSES.selectedItem));
+  assert.equal(navigation.items[1].attributes.get('aria-current'), 'true');
+  assert.strictEqual(environment.activeElement, navigation.items[1]);
+
+  environment.clock.tick(400);
+  assert.deepEqual(resizeCounts(accordion.instances), [0, 1, 0]);
+  assert.equal(environment.clock.pendingCount(), 0);
+});
+
+test('switching compact panels resizes each newly visible child without notifying hidden children', () => {
+  const environment = createEnvironment();
+  const { accordion, container, navigation } = attachAccordionWithNavigation(environment);
+
+  environment.fire(navigation.toggles[0], 'click');
+  environment.fire(navigation.items[0], 'click');
+  environment.clock.tick(200);
+  assert.deepEqual(resizeCounts(accordion.instances), [1, 0, 0]);
+
+  environment.fire(navigation.items[2], 'click');
+  environment.clock.tick(199);
+  assert.deepEqual(resizeCounts(accordion.instances), [1, 0, 0]);
+
+  environment.clock.tick(1);
+  assert.deepEqual(resizeCounts(accordion.instances), [1, 0, 1]);
+  assert.equal(panelParts(container, 0).region.attributes.get('aria-hidden'), 'true');
+  assert.equal(panelParts(container, 1).region.attributes.get('aria-hidden'), 'true');
+  assert.equal(panelParts(container, 2).region.attributes.get('aria-hidden'), 'false');
+  assert.equal(
+    accordion._triggered.filter((event) => event.type === 'resize').length > 0,
+    true
+  );
+
+  environment.clock.tick(400);
+  assert.deepEqual(resizeCounts(accordion.instances), [1, 0, 1]);
+  assert.equal(environment.clock.pendingCount(), 0);
 });
 
 test('multiple compact navigation controls remain behaviorally isolated', () => {
