@@ -732,6 +732,19 @@ test('unselected compact label focus matches hover without removing the focus ou
   );
 });
 
+test('only unselected compact labels receive a decorative CSS chevron', () => {
+  const css = fs.readFileSync(path.join(PROJECT_ROOT, 'h5p-accordion-papijo.css'), 'utf8');
+  const chevronRule = css.match(
+    /\.h5p-accordion-papijo-navigation-item:not\(\.h5p-accordion-papijo-navigation-item-selected\)::before\s*{([^}]*)}/s
+  );
+
+  assert.ok(chevronRule, 'expected a pseudo-element restricted to unselected labels');
+  assert.match(chevronRule[1], /content:\s*"";/);
+  assert.match(chevronRule[1], /border-right:\s*0\.15em solid currentColor;/);
+  assert.match(chevronRule[1], /border-bottom:\s*0\.15em solid currentColor;/);
+  assert.match(chevronRule[1], /transform:\s*rotate\(-45deg\);/);
+});
+
 test('selecting another compact label transfers the one selected state and visible panel', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);

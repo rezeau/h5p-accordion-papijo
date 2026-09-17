@@ -196,6 +196,18 @@
   cursor: pointer;
 }
 
+.h5p-accordion-papijo > .h5p-accordion-papijo-navigation > .h5p-accordion-papijo-navigation-list .h5p-accordion-papijo-navigation-item:not(.h5p-accordion-papijo-navigation-item-selected)::before {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: var(--h5p-theme-spacing-xs);
+  border-right: 0.15em solid currentColor;
+  border-bottom: 0.15em solid currentColor;
+  transform: rotate(-45deg);
+  vertical-align: 0.05em;
+}
+
 .h5p-accordion-papijo > .h5p-panel-title[hidden] {
   display: none;
 }
