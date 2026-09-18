@@ -2,7 +2,7 @@
 
 H5P.AccordionPapiJo is a PapiJo variant of the official H5P Accordion content type. It is based on the upstream work by Joubel and retains the familiar single-open-panel Accordion behavior while adding PapiJo-specific authoring and navigation features.
 
-The current release-preparation version is 1.1.5.
+The current release-preparation version is 1.1.6.
 
 ## Compact panel navigation
 
@@ -13,6 +13,10 @@ Leaving `accordionTitle` empty disables compact navigation. A single-panel Accor
 ## Child initialization after expansion
 
 After a panel finishes expanding, AccordionPapiJo notifies that panel's child with a `resize` event. This allows children that defer initialization until visible—notably H5P.Video with YouTube sources—to initialize correctly in both traditional and compact Accordion modes. Uploaded and local video behavior is unchanged.
+
+## Audio sizing
+
+Full fit-to-wrapper H5P.Audio controls no longer collapse to zero height in Chromium browsers inside Accordion panels. AccordionPapiJo preserves the browser's native Audio height without hard-coding a pixel value in both traditional and compact modes.
 
 ## Allowed panel content
 

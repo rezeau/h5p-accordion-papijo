@@ -454,7 +454,7 @@ test('all manifests, semantics and language files contain valid JSON', () => {
   }
 });
 
-test('library metadata identifies H5P.AccordionPapiJo 1.1.5', () => {
+test('library metadata identifies H5P.AccordionPapiJo 1.1.6', () => {
   const library = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'library.json'), 'utf8'));
 
   assert.deepEqual(
@@ -468,7 +468,7 @@ test('library metadata identifies H5P.AccordionPapiJo 1.1.5', () => {
       machineName: 'H5P.AccordionPapiJo',
       majorVersion: 1,
       minorVersion: 1,
-      patchVersion: 5
+      patchVersion: 6
     }
   );
 });
