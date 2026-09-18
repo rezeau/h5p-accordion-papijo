@@ -798,6 +798,21 @@ test('only unselected compact labels receive a decorative CSS chevron', () => {
   assert.match(chevronRule[1], /transform:\s*rotate\(-45deg\);/);
 });
 
+test('restores native height only for full fit-to-wrapper Audio directly in a panel', () => {
+  const css = fs.readFileSync(path.join(PROJECT_ROOT, 'h5p-accordion-papijo.css'), 'utf8');
+  const audioHeightRules = Array.from(
+    css.matchAll(/([^{}]+)\{([^{}]*height:\s*revert\s*!important;[^{}]*)}/g)
+  );
+
+  assert.equal(audioHeightRules.length, 1, 'expected exactly one native Audio height override');
+  assert.equal(
+    audioHeightRules[0][1].replace(/\s+/g, ' ').trim(),
+    '.h5p-accordion-papijo .h5p-panel-content.h5p-audio-controls > .h5p-audio.h5p-audio--fit-to-wrapper'
+  );
+  assert.match(audioHeightRules[0][2], /height:\s*revert\s*!important;/);
+  assert.doesNotMatch(css, /(?:^|})\s*(?:audio|\.h5p-audio--fit-to-wrapper)\s*{[^}]*height:\s*revert/s);
+});
+
 test('selecting another compact label transfers the one selected state and visible panel', () => {
   const environment = createEnvironment();
   const { container, navigation } = attachAccordionWithNavigation(environment);

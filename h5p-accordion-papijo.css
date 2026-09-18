@@ -97,6 +97,12 @@
   padding-left: var(--h5p-theme-spacing-xl);
 }
 
+.h5p-accordion-papijo
+  .h5p-panel-content.h5p-audio-controls
+  > .h5p-audio.h5p-audio--fit-to-wrapper {
+  height: revert !important;
+}
+
 .h5p-accordion-papijo .h5p-panel-content p {
   margin-top: 0;
 }
