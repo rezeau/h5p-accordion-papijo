@@ -12,7 +12,7 @@ const {
   panelParts
 } = require('../test-support/h5p-shim');
 
-function panel(title, library = 'H5P.AdvancedTextPapiJo 1.2') {
+function panel(title, library = 'H5P.AdvancedTextPapiJo 1.3') {
   return {
     title,
     content: {
@@ -454,7 +454,7 @@ test('all manifests, semantics and language files contain valid JSON', () => {
   }
 });
 
-test('library metadata identifies H5P.AccordionPapiJo 1.1.6', () => {
+test('library metadata identifies H5P.AccordionPapiJo 1.2.0', () => {
   const library = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, 'library.json'), 'utf8'));
 
   assert.deepEqual(
@@ -467,8 +467,8 @@ test('library metadata identifies H5P.AccordionPapiJo 1.1.6', () => {
     {
       machineName: 'H5P.AccordionPapiJo',
       majorVersion: 1,
-      minorVersion: 1,
-      patchVersion: 6
+      minorVersion: 2,
+      patchVersion: 0
     }
   );
 });
@@ -478,7 +478,7 @@ test('newly authored panels allow exactly four libraries and exclude TextareaPap
   const panels = semantics.find((field) => field.name === 'panels');
   const content = panels.field.fields.find((field) => field.name === 'content');
   const intendedOptions = [
-    'H5P.AdvancedTextPapiJo 1.2',
+    'H5P.AdvancedTextPapiJo 1.3',
     'H5P.Image 1.1',
     'H5P.Video 1.6',
     'H5P.Audio 1.5'
